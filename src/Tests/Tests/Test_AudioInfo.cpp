@@ -104,7 +104,7 @@ SUITE(AudioInfo)
         m_pCAudioInfoInstance->getResult (dResult, CAudioInfo::kRms);
         CHECK_CLOSE(.1, dResult, 1e-3); 
         m_pCAudioInfoInstance->getResult (dResult, CAudioInfo::kStd);
-        CHECK_CLOSE(.1, dResult, 1e-3); 
+        CHECK_CLOSE(.0, dResult, 1e-3); 
     }
 }
 
