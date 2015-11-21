@@ -4,7 +4,6 @@
 
 #include "MigEditConfig.h"
 
-#include "Util.h"
 #include "AudioFileIf.h"
 
 #define WITH_FLOATEXCEPTIONS

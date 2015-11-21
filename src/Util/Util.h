@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <cstring>
+#include <limits>
 
 class CUtil
 {
@@ -91,7 +92,7 @@ public:
     }
 
     template<typename T>
-    static float getMax (T *pSrc, int iLength, bool bAbs = false)
+    static double getMax (T *pSrc, int iLength, bool bAbs = false)
     {
         T fMax;
         long long iMax;
@@ -101,12 +102,65 @@ public:
         return fMax;
     }
     template<typename T>
+    static double getMin (T *pSrc, int iLength, bool bAbs = false)
+    {
+        T fMin;
+        long long iMin;
+
+        findMin<T>(pSrc, fMin, iMin, iLength, bAbs);
+
+        return fMin;
+    }
+    template<typename T>
+    static double getMean (T *pSrc, int iLength)
+    {
+        assert (iLength >= 0);
+
+        double dMean = 0;
+
+        for (int i=0; i < iLength; i++)
+        {
+            dMean  += pSrc[i];
+        }
+
+        if (iLength > 0)
+        {
+            dMean  /= iLength;
+        }
+
+        return dMean;
+    }
+    template<typename T>
+    static double getStd (T *pSrc, int iLength, double dMean = std::numeric_limits<double>::max())
+    {
+        assert (iLength >= 0);
+
+        double dStd = 0;
+
+        if (dMean == std::numeric_limits<double>::max())
+        {
+            dMean   = getMean(pSrc, iLength);
+        }
+
+        for (int i=0; i < iLength; i++)
+        {
+            dStd   += (pSrc[i] - dMean) * (pSrc[i] - dMean);
+        }
+
+        if (iLength > 1)
+        {
+            dStd   /= (iLength - 1);
+        }
+
+        return std::sqrt(dStd);
+    }
+    template<typename T>
     static void findMax (T *pSrc, T &fMax, long long &iMax, int iLength, bool bAbs = false)
     {
         assert (iLength >= 0);
         assert (pSrc);
 
-        fMax    = std::numeric_limits<T>::min();
+        fMax    = -std::numeric_limits<T>::max();
         iMax    = -1;
 
         for (int i = 0; i < iLength; i++)
@@ -117,6 +171,26 @@ public:
             {
                 fMax = fCurr;
                 iMax = i;
+            }
+        }
+    }
+    template<typename T>
+    static void findMin (T *pSrc, T &fMin, long long &iMin, int iLength, bool bAbs = false)
+    {
+        assert (iLength >= 0);
+        assert (pSrc);
+
+        fMin    = std::numeric_limits<T>::max();
+        iMin    = -1;
+
+        for (int i = 0; i < iLength; i++)
+        {
+            T fCurr   = (bAbs)? std::abs(pSrc[i]) : pSrc[i];
+
+            if (fCurr < fMin)
+            {
+                fMin    = fCurr;
+                iMin    = i;
             }
         }
     }

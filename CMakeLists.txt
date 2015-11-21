@@ -87,6 +87,9 @@ if (WITH_TESTS)
 	add_test(Fft ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec Fft)
 	add_test(RingBuff ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec RingBuff)
 	add_test(InputBuffSrc ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec InputBuffSrc)
+
+	add_test(AudioInfo ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec AudioInfo)
+
 	add_cppcheck_test ()
 endif (WITH_TESTS)
 
