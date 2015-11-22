@@ -5,6 +5,8 @@
 #include "MigEditConfig.h"
 
 #include "AudioFileIf.h"
+#include "AudioInfo.h"
+
 
 #define WITH_FLOATEXCEPTIONS
 #define WITH_MEMORYCHECK
@@ -43,11 +45,12 @@ int main(int argc, char* argv[])
 
     CAudioFileIf::FileSpec_t stFileSpec;                    //!< input/output file spec
 
-    int                     iLengthOfBlock      = 0;        //!< length of one input block to process
-
     long long               iInFileLength       = 0;        //!< length of input file
 
     clock_t                 time                = 0;
+
+    CAudioInfo              *phAudioInfo        = 0;
+    float                   **ppfAudioData    = 0;
 
     // detect memory leaks in win32
 #if (defined(WITH_MEMORYCHECK) && !defined(NDEBUG) && defined (GTCMT_WIN32))
@@ -84,24 +87,49 @@ int main(int argc, char* argv[])
         phInputFile->getFileSpec(stFileSpec);
         phInputFile->getLength(iInFileLength);
 
-        // open the output wave file
-        CAudioFileIf::createInstance(phOutputFile);
-        phOutputFile->openFile(sOutputFilePath, CAudioFileIf::kFileWrite, &stFileSpec);
-        if (!phOutputFile->isOpen())
+    }
+
+    // allocate buffer for the whole file
+    if (iInFileLength > 0 && stFileSpec.iNumChannels > 0)
+    {
+        ppfAudioData  = new float* [stFileSpec.iNumChannels];
+        for (int i = 0; i < stFileSpec.iNumChannels; i++)
         {
-            cout << "Input wave file open error!";
-            return -1;
+            ppfAudioData[i]   = new float [iInFileLength];
         }
     }
 
-    // write remaining samples to file
-    //phOutputFile->writeData(ppfIrData, static_cast<int>(iLengthOfIr)-1);
+    // get audio data
+    phInputFile->readData(ppfAudioData, iInFileLength);
+
+    // get audio info
+    CAudioInfo::createInstance(phAudioInfo);
+    phAudioInfo->initInstance(stFileSpec.fSampleRateInHz, stFileSpec.iNumChannels);
+    phAudioInfo->process(ppfAudioData,iInFileLength);
+
+    for (int i = 0; i < CAudioInfo::kNumInfoTypes; i++)
+    {
+        cout << phAudioInfo->getResultName(static_cast<CAudioInfo::InfoType_t>(i)) << ":\t";
+        for (int c = 0; c < stFileSpec.iNumChannels; c++)
+        {
+            double dValue;
+            phAudioInfo->getResult(dValue, static_cast<CAudioInfo::InfoType_t>(i), c);
+            cout << dValue << "\t";
+        }
+        cout << endl;
+    }
+
 
     //////////////////////////////////////
     // clean-up
+    for (int i = 0; i < stFileSpec.iNumChannels; i++)
+    {
+        delete [] ppfAudioData[i];
+    }
+    delete [] ppfAudioData ;
+
     // close the files
     CAudioFileIf::destroyInstance(phInputFile);
-    CAudioFileIf::destroyInstance(phOutputFile);
 
     return 0;
     
@@ -112,7 +140,7 @@ void     showClInfo()
 {
     cout << "GTCMT MigEdit" << endl;
     cout << "(c) 2015 by Alexander Lerch" << endl;
-    cout    << "output" << endl;
+    //cout    << "output" << endl;
     cout  << endl;
 
     return;

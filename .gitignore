@@ -46,3 +46,10 @@
 /bld
 /bin/debug/*.lastcodeanalysissucceeded
 /lib/debug
+/3rdparty/sndlib/makefile.in
+/3rdparty/sndlib/mkinstalldirs
+/3rdparty/sndlib/s7.html
+/3rdparty/sndlib/sndins/Makefile.in
+/3rdparty/sndlib/sndins/README
+/3rdparty/sndlib/wz_data.js
+/3rdparty/sndlib/wz_tooltip.js

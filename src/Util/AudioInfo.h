@@ -1,6 +1,7 @@
 #if !defined(__AudioInfo_hdr__)
 #define __AudioInfo_hdr__
 
+#include <string>
 #include "ErrorDef.h"
 
 class CAudioInfo
@@ -16,6 +17,8 @@ public:
         kMean,                  //!< average sample value
         kRms,                   //!< root mean square
         kStd,                   //!< standard deviation
+
+        kLengthInS,             //!< length in samples
 
         kNumInfoTypes
     };
@@ -44,8 +47,9 @@ public:
     */
     Error_t resetInstance ();
  
-    Error_t process (float **ppfAudio, int iLength);
+    Error_t process (float **ppfAudio, long long int iLength);
     Error_t  getResult (double &dResult, InfoType_t eInfoType, int iChannelIdx = 0);
+    std::string CAudioInfo::getResultName( InfoType_t eInfoType );
 
 protected:
     CAudioInfo ();
@@ -56,7 +60,10 @@ private:
     double  **m_ppadResult;
 
     int     m_iNumChannels;
+    float   m_fSampleRate;
     bool    m_bIsInitialized;
+
+    static const std::string m_sResultNames[kNumInfoTypes];
 };
 
 #endif // #if !defined(__AudioInfo_hdr__)

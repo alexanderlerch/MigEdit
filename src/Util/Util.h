@@ -92,7 +92,7 @@ public:
     }
 
     template<typename T>
-    static double getMax (T *pSrc, int iLength, bool bAbs = false)
+    static double getMax (T *pSrc, long long int iLength, bool bAbs = false)
     {
         T fMax;
         long long iMax;
@@ -102,7 +102,7 @@ public:
         return fMax;
     }
     template<typename T>
-    static double getMin (T *pSrc, int iLength, bool bAbs = false)
+    static double getMin (T *pSrc, long long int iLength, bool bAbs = false)
     {
         T fMin;
         long long iMin;
@@ -112,7 +112,7 @@ public:
         return fMin;
     }
     template<typename T>
-    static double getMean (T *pSrc, int iLength)
+    static double getMean (T *pSrc, long long int iLength)
     {
         assert (iLength >= 0);
 
@@ -131,7 +131,7 @@ public:
         return dMean;
     }
     template<typename T>
-    static double getStd (T *pSrc, int iLength, double dMean = std::numeric_limits<double>::max())
+    static double getStd (T *pSrc, long long int iLength, double dMean = std::numeric_limits<double>::max())
     {
         assert (iLength >= 0);
 
@@ -155,7 +155,27 @@ public:
         return std::sqrt(dStd);
     }
     template<typename T>
-    static void findMax (T *pSrc, T &fMax, long long &iMax, int iLength, bool bAbs = false)
+    static double getRms (T *pSrc, long long int iLength)
+    {
+        assert (iLength >= 0);
+
+        double dRms = 0;
+
+
+        for (int i=0; i < iLength; i++)
+        {
+            dRms   += pSrc[i] * pSrc[i];
+        }
+
+        if (iLength > 0)
+        {
+            dRms   /= iLength;
+        }
+
+        return std::sqrt(dRms);
+    }
+    template<typename T>
+    static void findMax (T *pSrc, T &fMax, long long &iMax, long long int iLength, bool bAbs = false)
     {
         assert (iLength >= 0);
         assert (pSrc);
@@ -175,7 +195,7 @@ public:
         }
     }
     template<typename T>
-    static void findMin (T *pSrc, T &fMin, long long &iMin, int iLength, bool bAbs = false)
+    static void findMin (T *pSrc, T &fMin, long long &iMin, long long int iLength, bool bAbs = false)
     {
         assert (iLength >= 0);
         assert (pSrc);
