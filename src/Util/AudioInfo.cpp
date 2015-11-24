@@ -6,7 +6,7 @@
 
 const std::string CAudioInfo::m_sResultNames[kNumInfoTypes] = {"Max", "Min", "AbsMax","Range","Mean","Rms","Std","LengthInS"};
 
-std::string CAudioInfo::getResultName( InfoType_t eInfoType )
+std::string CAudioInfo::getResultName( InfoType_t eInfoType ) const
 {
     return m_sResultNames[eInfoType];
 }
@@ -107,7 +107,7 @@ Error_t CAudioInfo::process( float **ppfAudio, long long int iLength )
     return kNoError;
 }
 
-Error_t CAudioInfo::getResult( double &dResult, InfoType_t eInfoType, int iChannelIdx /*= 0*/ )
+Error_t CAudioInfo::getResult( double &dResult, InfoType_t eInfoType, int iChannelIdx /*= 0*/ ) const 
 {
     if (!m_bIsInitialized)
         return kNotInitializedError;
@@ -118,4 +118,14 @@ Error_t CAudioInfo::getResult( double &dResult, InfoType_t eInfoType, int iChann
     dResult = m_ppadResult[iChannelIdx][eInfoType];
 
     return kNoError;
+}
+
+int CAudioInfo::getNumChannels() const
+{
+    return m_iNumChannels;
+}
+
+float CAudioInfo::getSampleRate() const
+{
+    return m_fSampleRate;
 }

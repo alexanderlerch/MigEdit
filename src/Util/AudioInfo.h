@@ -48,8 +48,11 @@ public:
     Error_t resetInstance ();
  
     Error_t process (float **ppfAudio, long long int iLength);
-    Error_t  getResult (double &dResult, InfoType_t eInfoType, int iChannelIdx = 0);
-    std::string CAudioInfo::getResultName( InfoType_t eInfoType );
+
+    int     getNumChannels() const;
+    float   getSampleRate() const;
+    Error_t getResult (double &dResult, InfoType_t eInfoType, int iChannelIdx = 0) const;
+    std::string getResultName( InfoType_t eInfoType ) const;
 
 protected:
     CAudioInfo ();
