@@ -172,6 +172,7 @@ protected:
     static const long long int    m_kiDefBlockLength;     //!< buffer length for read and write operations
 
 private:
+    CAudioFileIf(const CAudioFileIf& that);
     virtual Error_t initDefaults ();
 
     virtual long long int readDataIntern (float **ppfAudioData, long long int iLength) = 0;

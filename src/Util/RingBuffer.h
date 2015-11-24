@@ -190,6 +190,8 @@ public:
         return m_iBuffLength;
     }
 private:
+    CRingBuffer(const CRingBuffer& that);
+
     void incIdx (int &iIdx, int iOffset = 1)
     {
         while ((iIdx + iOffset) < 0)

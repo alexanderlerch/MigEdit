@@ -135,6 +135,7 @@ protected:
     virtual ~CFft () {};
 
 private:
+    CFft(const CFft& that);
     Error_t allocMemory ();
     Error_t freeMemory ();
     Error_t computeWindow (WindowFunction_t eWindow);

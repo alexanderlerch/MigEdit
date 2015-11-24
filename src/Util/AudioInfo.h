@@ -56,6 +56,7 @@ protected:
     virtual ~CAudioInfo () {};
 
 private:
+    CAudioInfo(const CAudioInfo& that);
 
     double  **m_ppadResult;
 

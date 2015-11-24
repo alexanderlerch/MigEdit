@@ -19,6 +19,7 @@ public:
     bool isOpen ();
 
 private:
+    CAudioFileRaw(const CAudioFileRaw& that);
     Error_t freeMemory ();
     Error_t allocMemory ();
     long long int readDataIntern (float **ppfAudioData, long long int iNumFrames);
@@ -51,6 +52,7 @@ public:
     Error_t allocMemory ();
 
 private:
+    CAudioFileSndLib(const CAudioFileSndLib& that);
     long long int readDataIntern (float **ppfAudioData, long long int iLength);
     long long int writeDataIntern (float **ppfAudioData, long long int iLength);
     long long getLengthIntern();

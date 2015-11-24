@@ -196,6 +196,7 @@ public:
     };
 
 private:
+    CInputBuffSrc(const CInputBuffSrc& that);
     int     m_iNumChannels;                 //!< number of channels in data
     T       **m_pptInternalBuffer;          //!< internal buffer
     int     m_iMaxInternalBufferLength;     //!< maximum number of output frames
