@@ -12,6 +12,7 @@ enum Error_t
 
     kNotInitializedError,
     kFunctionIllegalCallError,
+    kInvalidString,
 
     kMemError,
 

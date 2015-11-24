@@ -6,7 +6,7 @@
 
 #include "AudioFileIf.h"
 #include "AudioInfo.h"
-
+#include "CommandLineOptions.h"
 
 #define WITH_FLOATEXCEPTIONS
 #define WITH_MEMORYCHECK
@@ -31,7 +31,26 @@ using std::endl;
 // local function declarations
 void    showClInfo ();
 
-void    getClArgs (std::string &sInputFilePath, std::string &sOutputFilePath, int argc, char* argv[]);
+
+enum ClOptionIdx_t
+{
+    kInputName,             //!< input file path
+    //kOutputName,            //!< output file path
+    kNormalize,             //!< processing: normalize level
+    //kDownmix,
+    //kResample,
+    //kSpectrogram,           //!< compute spectrogram
+    //kCorrelation,           //!< compute ACF coefficients
+    //kPitchChroma,           //!< compute pitch chroma
+
+    kNumClOptions
+};
+
+const CCommandLineOptions::COption MyOptions[kNumClOptions] = 
+{
+    CCommandLineOptions::COption(kInputName, "-i", "input audio file path", CCommandLineOptions::COption::kString),
+    CCommandLineOptions::COption(kNormalize, "-n", "normalize the input file", CCommandLineOptions::COption::kBool),
+};
 
 /////////////////////////////////////////////////////////////////////////////////
 // main function
@@ -50,7 +69,9 @@ int main(int argc, char* argv[])
     clock_t                 time                = 0;
 
     CAudioInfo              *phAudioInfo        = 0;
-    float                   **ppfAudioData    = 0;
+    float                   **ppfAudioData      = 0;
+
+    CCommandLineOptions     *phClArgs           = 0;
 
     // detect memory leaks in win32
 #if (defined(WITH_MEMORYCHECK) && !defined(NDEBUG) && defined (GTCMT_WIN32))
@@ -67,27 +88,36 @@ int main(int argc, char* argv[])
     _controlfp(~(_EM_INVALID | _EM_ZERODIVIDE | _EM_OVERFLOW | _EM_UNDERFLOW | _EM_DENORMAL), _MCW_EM) ;
 #endif // #ifndef WITHOUT_EXCEPTIONS
 
+    CCommandLineOptions::createInstance(phClArgs);
+    CAudioFileIf::createInstance(phInputFile);
+    CAudioInfo::createInstance(phAudioInfo);
+
     showClInfo ();
 
+    //////////////////////////////////////////////////////////////////////////////
     // parse command line arguments
-    getClArgs (sInputFilePath, sOutputFilePath, argc, argv);
+    phClArgs->initInstance(MyOptions, kNumClOptions);
+    phClArgs->process(argc, argv);
+
+    if (phClArgs->isOptionSet(kInputName))
+        phClArgs->getOption(kInputName, sInputFilePath);
+    else
+    {
+        cout << "input path not set";
+        return -1;
+    }
 
     //////////////////////////////////////////////////////////////////////////////
-    // open files
+    // open the input wave file
+    phInputFile->openFile(sInputFilePath, CAudioFileIf::kFileRead);
+    if (!phInputFile->isOpen())
     {
-
-        // open the input wave file
-        CAudioFileIf::createInstance(phInputFile);
-        phInputFile->openFile(sInputFilePath, CAudioFileIf::kFileRead);
-        if (!phInputFile->isOpen())
-        {
-            cout << "Input wave file open error!";
-            return -1;
-        }
-        phInputFile->getFileSpec(stFileSpec);
-        phInputFile->getLength(iInFileLength);
-
+        cout << "Input wave file open error!";
+        return -1;
     }
+    phInputFile->getFileSpec(stFileSpec);
+    phInputFile->getLength(iInFileLength);
+
 
     // allocate buffer for the whole file
     if (iInFileLength > 0 && stFileSpec.iNumChannels > 0)
@@ -103,7 +133,6 @@ int main(int argc, char* argv[])
     phInputFile->readData(ppfAudioData, iInFileLength);
 
     // get audio info
-    CAudioInfo::createInstance(phAudioInfo);
     phAudioInfo->initInstance(stFileSpec.fSampleRateInHz, stFileSpec.iNumChannels);
     phAudioInfo->process(ppfAudioData,iInFileLength);
 
@@ -130,6 +159,8 @@ int main(int argc, char* argv[])
 
     // close the files
     CAudioFileIf::destroyInstance(phInputFile);
+    CCommandLineOptions::destroyInstance(phClArgs);
+    CAudioInfo::destroyInstance(phAudioInfo);
 
     return 0;
     
@@ -146,10 +177,3 @@ void     showClInfo()
     return;
 }
 
-void getClArgs( std::string &sInputFilePath, std::string &sOutputFilePath, int argc, char* argv[] )
-{
-    if (argc > 1)
-        sInputFilePath.assign (argv[1]);
-    if (argc > 2)
-        sOutputFilePath.assign (argv[3]);
-}
