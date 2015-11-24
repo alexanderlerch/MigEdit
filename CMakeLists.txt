@@ -83,12 +83,13 @@ if (WITH_TESTS)
 	enable_testing()
  	
 	# add tests here
-	add_test(AudioIo ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec AudioIo "${CMAKE_SOURCE_DIR}/src/Tests/TestData/")
-	add_test(Fft ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec Fft)
-	add_test(RingBuff ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec RingBuff)
-	add_test(InputBuffSrc ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec InputBuffSrc)
-
 	add_test(AudioInfo ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec AudioInfo)
+	add_test(AudioIo ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec AudioIo "${CMAKE_SOURCE_DIR}/src/Tests/TestData/")
+	add_test(CommandLineOptions ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec CommandLineOptions )
+	add_test(Fft ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec Fft)
+	add_test(InputBuffSrc ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec InputBuffSrc)
+	add_test(Preproc ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec Preproc)
+	add_test(RingBuff ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec RingBuff)
 
 	add_cppcheck_test ()
 endif (WITH_TESTS)
