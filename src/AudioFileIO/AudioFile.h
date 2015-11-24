@@ -13,20 +13,20 @@ public:
     CAudioFileRaw ();
     virtual ~CAudioFileRaw ();
 
-    Error_t openFile (std::string cAudioFileName, FileIoType_t eIoType, FileSpec_t const *psFileSpec = 0);
-    Error_t closeFile ();
-    bool isEof ();
-    bool isOpen ();
+    Error_t openFile (std::string cAudioFileName, FileIoType_t eIoType, FileSpec_t const *psFileSpec = 0) override;
+    Error_t closeFile () override;
+    bool isEof () override;
+    bool isOpen () override;
 
 private:
     CAudioFileRaw(const CAudioFileRaw& that);
-    Error_t freeMemory ();
-    Error_t allocMemory ();
-    long long int readDataIntern (float **ppfAudioData, long long int iNumFrames);
-    long long int writeDataIntern (float **ppfAudioData, long long int iLength);
-    long long getLengthIntern();
-    long long getPositionIntern();
-    Error_t setPositionIntern( long long iFrame );
+    Error_t freeMemory () override;
+    Error_t allocMemory () override;
+    long long int readDataIntern (float **ppfAudioData, long long int iNumFrames) override;
+    long long int writeDataIntern (float **ppfAudioData, long long int iLength) override;
+    long long getLengthIntern() override;
+    long long getPositionIntern() override;
+    Error_t setPositionIntern( long long iFrame ) override;
 
     float scaleUp (float fSample2Clip);
     float scaleDown (float fSample2Scale);
@@ -44,20 +44,20 @@ public:
     CAudioFileSndLib ();
     virtual ~CAudioFileSndLib ();
 
-    Error_t openFile (std::string cAudioFileName, FileIoType_t eIoType, FileSpec_t const *psFileSpec = 0);
-    Error_t closeFile ();
-    bool isEof ();
-    bool isOpen ();
-    Error_t freeMemory ();
-    Error_t allocMemory ();
+    Error_t openFile (std::string cAudioFileName, FileIoType_t eIoType, FileSpec_t const *psFileSpec = 0) override;
+    Error_t closeFile () override;
+    bool isEof () override;
+    bool isOpen () override;
+    Error_t freeMemory () override;
+    Error_t allocMemory () override;
 
 private:
     CAudioFileSndLib(const CAudioFileSndLib& that);
-    long long int readDataIntern (float **ppfAudioData, long long int iLength);
-    long long int writeDataIntern (float **ppfAudioData, long long int iLength);
-    long long getLengthIntern();
-    long long getPositionIntern();
-    Error_t setPositionIntern( long long iFrame );
+    long long int readDataIntern (float **ppfAudioData, long long int iLength) override;
+    long long int writeDataIntern (float **ppfAudioData, long long int iLength) override;
+    long long getLengthIntern() override;
+    long long getPositionIntern() override;
+    Error_t setPositionIntern( long long iFrame ) override;
 
     int m_FileHandle;                           //!< sndlib file handle
 
