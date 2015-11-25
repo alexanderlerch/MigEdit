@@ -81,6 +81,17 @@ public:
             pSrcDest[i] *= pSrc[i];
     }
 
+    static float multBuffScalar (float *pSrc1, const float *pSrc2, int iLength)
+    {
+        assert (iLength >= 0);
+        assert (pSrc1);
+        assert (pSrc2);
+        float  fResult = 0;
+
+        for (int i = 0; i < iLength; i++)
+            fResult += pSrc1[i] * pSrc2[i];
+    }
+
     static void addBuff (float *pSrcDest, const float *pSrc, int iLength)
     {
         assert (iLength >= 0);
@@ -89,6 +100,15 @@ public:
 
         for (int i = 0; i < iLength; i++)
             pSrcDest[i] += pSrc[i];
+    }
+
+    static bool isBuffEqual (float *pSrc1, const float *pSrc2, int iLength)
+    {
+        assert (iLength >= 0);
+        assert (pSrc1);
+        assert (pSrc2);
+
+        return (memcmp (pSrc1, pSrc2, iLength * sizeof(float)) == 0);
     }
 
     template<typename T>
