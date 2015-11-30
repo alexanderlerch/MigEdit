@@ -90,6 +90,8 @@ public:
 
         for (int i = 0; i < iLength; i++)
             fResult += pSrc1[i] * pSrc2[i];
+
+        return fResult;
     }
 
     static void addBuff (float *pSrcDest, const float *pSrc, int iLength)
