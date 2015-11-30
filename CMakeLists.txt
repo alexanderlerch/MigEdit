@@ -89,6 +89,7 @@ if (WITH_TESTS)
 	add_test(Fft ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec Fft)
 	add_test(InputBuffSrc ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec InputBuffSrc)
 	add_test(Matrix ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec Matrix)
+	add_test(MatrixRepresentation ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec MatrixRepresentation)
 	add_test(Preproc ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec Preproc)
 	add_test(RingBuff ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec RingBuff)
 
