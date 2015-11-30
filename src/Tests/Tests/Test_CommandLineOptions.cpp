@@ -34,15 +34,15 @@ SUITE(CommandLineOptions)
     {
         CommandLineOptionsData() 
         {
-            CCommandLineOptions::createInstance(m_phClArgs);
-            m_phClArgs->initInstance(MyOptions, kNumClOptions);
+            CCommandLineOptions::create(m_phClArgs);
+            m_phClArgs->init(MyOptions, kNumClOptions);
             argc = 10;
         }
 
         ~CommandLineOptionsData() 
         {
-            m_phClArgs->resetInstance();
-            CCommandLineOptions::destroyInstance(m_phClArgs);
+            m_phClArgs->reset();
+            CCommandLineOptions::destroy(m_phClArgs);
 
         }
 

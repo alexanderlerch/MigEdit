@@ -23,14 +23,14 @@ SUITE(Fft)
             m_pfImag    = new float [m_iFftLength];
             m_pfTmp     = new float [m_iFftLength];
 
-            CFft::createInstance(m_pCFftInstance);
-            m_pCFftInstance->initInstance(m_iFftLength, 1, CFft::kWindowHann, CFft::kNoWindow);
+            CFft::create(m_pCFftInstance);
+            m_pCFftInstance->init(m_iFftLength, 1, CFft::kWindowHann, CFft::kNoWindow);
         }
 
         ~FftData() 
         {
-            m_pCFftInstance->resetInstance();
-            CFft::destroyInstance(m_pCFftInstance);
+            m_pCFftInstance->reset();
+            CFft::destroy(m_pCFftInstance);
 
             delete [] m_pfReal;
             delete [] m_pfImag;
@@ -141,8 +141,8 @@ SUITE(Fft)
     {
         const int iDataLength = m_iFftLength>>3;
 
-        m_pCFftInstance->resetInstance();
-        m_pCFftInstance->initInstance(iDataLength, 8, CFft::kWindowHann, CFft::kPreWindow);
+        m_pCFftInstance->reset();
+        m_pCFftInstance->init(iDataLength, 8, CFft::kWindowHann, CFft::kPreWindow);
         CSignalGen::generateDc(m_pfTime, iDataLength, 1.F);
 
         m_pCFftInstance->doFft(m_pfFreq, m_pfTime);
@@ -158,8 +158,8 @@ SUITE(Fft)
     {
         const int iDataLength = m_iFftLength>>3;
 
-        m_pCFftInstance->resetInstance();
-        m_pCFftInstance->initInstance(iDataLength, 8, CFft::kWindowHamming, CFft::kPreWindow);
+        m_pCFftInstance->reset();
+        m_pCFftInstance->init(iDataLength, 8, CFft::kWindowHamming, CFft::kPreWindow);
         CSignalGen::generateDc(m_pfTime, iDataLength, 1.F);
 
         m_pCFftInstance->doFft(m_pfFreq, m_pfTime);

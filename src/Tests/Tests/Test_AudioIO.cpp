@@ -25,7 +25,7 @@ SUITE(AudioIo)
             m_stFileSpec.fSampleRateInHz = 44100.F;
             m_stFileSpec.iNumChannels    = m_iNumChannels;
 
-            CAudioFileIf::createInstance(m_pCAudioFile);
+            CAudioFileIf::create(m_pCAudioFile);
             m_ppfAudioData  = 0;
             m_ppfTmp        = 0;
             m_ppfAudioData  = new float*[m_iNumChannels];
@@ -49,7 +49,7 @@ SUITE(AudioIo)
             delete [] m_ppfAudioData;
             delete [] m_ppfTmp;
 
-            CAudioFileIf::destroyInstance(m_pCAudioFile);
+            CAudioFileIf::destroy(m_pCAudioFile);
        }
 
 
@@ -76,7 +76,7 @@ SUITE(AudioIo)
                 iNumRemainingFrames -= iPutFrames;
             }
             m_pCAudioFile->closeFile ();
-            m_pCAudioFile->resetInstance ();
+            m_pCAudioFile->reset ();
         }
 
         void deleteFile (std::string cExt)
@@ -227,7 +227,7 @@ SUITE(AudioIo)
             iNumRemainingFrames -= iPutFrames;
         }
         m_pCAudioFile->closeFile ();
-        m_pCAudioFile->resetInstance ();
+        m_pCAudioFile->reset ();
 
         // read the file and compare
         long long int iReadIdx = 0;

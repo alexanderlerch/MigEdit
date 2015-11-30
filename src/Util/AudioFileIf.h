@@ -46,17 +46,17 @@ public:
     \param CAudioFileIf * & pCInstance
     \return Error_t
     */
-    static Error_t createInstance (CAudioFileIf*& pCInstance);
+    static Error_t create (CAudioFileIf*& pCInstance);
     /*! destroys and audio file IO instance
     \param CAudioFileIf * & pCInstance
     \return Error_t
     */
-    static Error_t destroyInstance (CAudioFileIf*& pCInstance);
+    static Error_t destroy (CAudioFileIf*& pCInstance);
     /*! reset instance to initial state
     \param bool bFreeMemory: also free the internal memory if true
     \return Error_t
     */
-    virtual Error_t resetInstance (bool bFreeMemory = false);
+    virtual Error_t reset (bool bFreeMemory = false);
 
     /*! open a file for reading or writing
     \param std::string cAudioFileName

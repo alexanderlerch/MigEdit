@@ -290,7 +290,7 @@ Error_t CMatrixRepresentation::reset()
     delete [] m_ppfProcBuffer;
     m_ppfProcBuffer = 0;
 
-    CFft::destroyInstance(m_pCFft);
+    CFft::destroy(m_pCFft);
     delete m_pCInputBuffer;
     m_pCInputBuffer = 0;
 
@@ -320,8 +320,8 @@ Error_t CMatrixRepresentation::init( int iLengthInSamples, float fSampleRateInHz
     pfTmpTickLabels = new float[std::max(iNumObservations,iNumFreqBins)];
     
     // allocate internal memory and create private instances
-    CFft::createInstance(m_pCFft);
-    m_pCFft->initInstance(iBlockLength);
+    CFft::create(m_pCFft);
+    m_pCFft->init(iBlockLength);
     m_pCInputBuffer     = new CInputBuffSrc<float>(iNumChannels,iBlockLength, iBlockLength-iHopLength);
     m_ppfProcBuffer     = new float*[iNumChannels];
     for (int c = 0; c < iNumChannels; c++)

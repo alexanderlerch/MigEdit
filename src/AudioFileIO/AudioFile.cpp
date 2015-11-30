@@ -20,12 +20,12 @@ using namespace std;
 CAudioFileRaw::CAudioFileRaw(): CAudioFileIf() ,
     m_piTmpBuff(0)
 {
-    resetInstance (true);
+    reset (true);
 }
 
 CAudioFileRaw::~CAudioFileRaw()
 {
-    resetInstance (true);
+    reset (true);
 }
 
 Error_t CAudioFileRaw::freeMemory()
@@ -57,7 +57,7 @@ Error_t CAudioFileRaw::openFile( std::string cAudioFileName, FileIoType_t eIoTyp
     if (cAudioFileName.empty())
         return kFileOpenError;
 
-    resetInstance (true);
+    reset (true);
     setIoType(eIoType);
 
     // set file spec (required for raw streams)
@@ -71,7 +71,7 @@ Error_t CAudioFileRaw::openFile( std::string cAudioFileName, FileIoType_t eIoTyp
 
     if (!isOpen())
     {
-        resetInstance (true);
+        reset (true);
         return kFileOpenError;
     }
 
@@ -244,12 +244,12 @@ CAudioFileSndLib::CAudioFileSndLib(): CAudioFileIf() ,
     m_lFileLength(0),
     m_ppdTmpBuff(0)
 {
-    resetInstance (true);
+    reset (true);
 }
 
 CAudioFileSndLib::~CAudioFileSndLib()
 {
-    resetInstance (true);
+    reset (true);
 }
 
 
@@ -261,7 +261,7 @@ Error_t CAudioFileSndLib::openFile( std::string cAudioFileName, FileIoType_t eIo
     if (cAudioFileName.empty())
         return kFileOpenError;
 
-    resetInstance (true);
+    reset (true);
     setIoType(eIoType);
 
     if (!psFileSpec)
@@ -353,7 +353,7 @@ Error_t CAudioFileSndLib::openFile( std::string cAudioFileName, FileIoType_t eIo
 
     if (!isOpen())
     {
-        resetInstance (true);
+        reset (true);
         return kFileOpenError;
     }
 

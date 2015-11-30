@@ -20,7 +20,7 @@ public:
         assert(iBufferLengthInSamples > 0);
 
         m_ptBuff        = new T [m_iBuffLength];
-        resetInstance();
+        reset();
     };
 
     virtual ~CRingBuffer ()
@@ -133,7 +133,7 @@ public:
     /*! set buffer content and indices to 0
     \return void
     */
-    void resetInstance ()
+    void reset ()
     {
         CUtil::setZero(m_ptBuff, m_iBuffLength);
         m_iReadIdx  = 0;

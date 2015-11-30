@@ -17,10 +17,10 @@ CAudioInfo::CAudioInfo() :
     m_iNumChannels(0),
     m_fSampleRate(0)
 {
-    resetInstance ();
+    reset ();
 }
 
-Error_t CAudioInfo::createInstance( CAudioInfo*& pCAudioInfo )
+Error_t CAudioInfo::create( CAudioInfo*& pCAudioInfo )
 {
     pCAudioInfo = new CAudioInfo ();
 
@@ -30,7 +30,7 @@ Error_t CAudioInfo::createInstance( CAudioInfo*& pCAudioInfo )
     return kNoError;
 }
 
-Error_t CAudioInfo::destroyInstance( CAudioInfo*& pCAudioInfo )
+Error_t CAudioInfo::destroy( CAudioInfo*& pCAudioInfo )
 {
     if (!pCAudioInfo)
         return kNoError;
@@ -41,7 +41,7 @@ Error_t CAudioInfo::destroyInstance( CAudioInfo*& pCAudioInfo )
     return kNoError;
 }
 
-Error_t CAudioInfo::initInstance (float fSampleRate, int iNumChannels)
+Error_t CAudioInfo::init (float fSampleRate, int iNumChannels)
 {
     Error_t  rErr = kNoError;
 
@@ -50,7 +50,7 @@ Error_t CAudioInfo::initInstance (float fSampleRate, int iNumChannels)
         return kFunctionInvalidArgsError;
 
     // clean up
-    resetInstance();
+    reset();
 
     m_fSampleRate   = fSampleRate;
     m_iNumChannels  = iNumChannels;
@@ -66,7 +66,7 @@ Error_t CAudioInfo::initInstance (float fSampleRate, int iNumChannels)
     return rErr;
 }
 
-Error_t CAudioInfo::resetInstance()
+Error_t CAudioInfo::reset()
 {
     
     m_bIsInitialized    = false;

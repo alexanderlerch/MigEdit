@@ -7,10 +7,10 @@ CCommandLineOptions::CCommandLineOptions() :
     m_ppCOptions(0),
     m_ppCClArgs(0)
 {
-    resetInstance ();
+    reset ();
 }
 
-Error_t CCommandLineOptions::createInstance( CCommandLineOptions*& pCCommandLineOptions )
+Error_t CCommandLineOptions::create( CCommandLineOptions*& pCCommandLineOptions )
 {
     pCCommandLineOptions = new CCommandLineOptions ();
 
@@ -20,7 +20,7 @@ Error_t CCommandLineOptions::createInstance( CCommandLineOptions*& pCCommandLine
     return kNoError;
 }
 
-Error_t CCommandLineOptions::destroyInstance( CCommandLineOptions*& pCCommandLineOptions )
+Error_t CCommandLineOptions::destroy( CCommandLineOptions*& pCCommandLineOptions )
 {
     if (!pCCommandLineOptions)
         return kNoError;
@@ -31,11 +31,11 @@ Error_t CCommandLineOptions::destroyInstance( CCommandLineOptions*& pCCommandLin
     return kNoError;
 }
 
-Error_t CCommandLineOptions::initInstance (const COption myOptions[], int iNumOfOptions)
+Error_t CCommandLineOptions::init (const COption myOptions[], int iNumOfOptions)
 {
     Error_t  rErr = kNoError;
 
-    this->resetInstance();
+    this->reset();
 
     m_ppCOptions        = new COption*[iNumOfOptions];
     m_ppCClArgs         = new CClArg*[iNumOfOptions];
@@ -52,7 +52,7 @@ Error_t CCommandLineOptions::initInstance (const COption myOptions[], int iNumOf
     return rErr;
 }
 
-Error_t CCommandLineOptions::resetInstance()
+Error_t CCommandLineOptions::reset()
 {
     
     m_bIsInitialized    = false;

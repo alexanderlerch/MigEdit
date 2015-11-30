@@ -18,10 +18,10 @@ CFft::CFft() :
     m_ePrePostWindowOpt(kNoWindow),
     m_bIsInitialized(false)
 {
-    resetInstance ();
+    reset ();
 }
 
-Error_t CFft::createInstance( CFft*& pCFft )
+Error_t CFft::create( CFft*& pCFft )
 {
     pCFft = new CFft ();
 
@@ -31,7 +31,7 @@ Error_t CFft::createInstance( CFft*& pCFft )
     return kNoError;
 }
 
-Error_t CFft::destroyInstance( CFft*& pCFft )
+Error_t CFft::destroy( CFft*& pCFft )
 {
     if (!pCFft)
         return kNoError;
@@ -42,7 +42,7 @@ Error_t CFft::destroyInstance( CFft*& pCFft )
     return kNoError;
 }
 
-Error_t CFft::initInstance( int iBlockLength, int iZeroPadFactor, WindowFunction_t eWindow /*= kWindowHann*/, Windowing_t eWindowing /*= kPreWindow*/ )
+Error_t CFft::init( int iBlockLength, int iZeroPadFactor, WindowFunction_t eWindow /*= kWindowHann*/, Windowing_t eWindowing /*= kPreWindow*/ )
 {
     Error_t  rErr = kNoError;
 
@@ -51,7 +51,7 @@ Error_t CFft::initInstance( int iBlockLength, int iZeroPadFactor, WindowFunction
         return kFunctionInvalidArgsError;
 
     // clean up
-    resetInstance();
+    reset();
 
     m_iDataLength   = iBlockLength;
     m_iFftLength    = iBlockLength * iZeroPadFactor;
@@ -69,7 +69,7 @@ Error_t CFft::initInstance( int iBlockLength, int iZeroPadFactor, WindowFunction
     return rErr;
 }
 
-Error_t CFft::resetInstance()
+Error_t CFft::reset()
 {
     freeMemory();
 

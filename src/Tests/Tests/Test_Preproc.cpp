@@ -26,11 +26,11 @@ SUITE(Preproc)
 
                 CSignalGen::generateSine(m_ppfBuff[c], 1000.F, 44100, m_iLength, .5F/(c+1), (float)(c*M_PI));
             }
-            CAudioInfo::createInstance(m_phAudioInfo);
-            m_phAudioInfo->initInstance(44100, m_iNumChannels);
+            CAudioInfo::create(m_phAudioInfo);
+            m_phAudioInfo->init(44100, m_iNumChannels);
             m_phAudioInfo->process(m_ppfBuff, m_iLength);
-            CPreproc::createInstance(m_phPreproc);
-            m_phPreproc->initInstance(m_phAudioInfo);
+            CPreproc::create(m_phPreproc);
+            m_phPreproc->init(m_phAudioInfo);
         }
 
         ~PreprocData() 
@@ -43,11 +43,11 @@ SUITE(Preproc)
             delete [] m_ppfOut;
             delete [] m_ppfBuff;
 
-            m_phPreproc->resetInstance();
-            CPreproc::destroyInstance(m_phPreproc);
+            m_phPreproc->reset();
+            CPreproc::destroy(m_phPreproc);
 
-            m_phAudioInfo->resetInstance();
-            CAudioInfo::destroyInstance(m_phAudioInfo);
+            m_phAudioInfo->reset();
+            CAudioInfo::destroy(m_phAudioInfo);
         }
 
         CPreproc *m_phPreproc;

@@ -23,7 +23,7 @@ SUITE(Matrix)
                 m_ppfBuff[c]    = new float [m_iNumCols];
             }
 
-            Matrix.initialize(m_iNumRows, m_iNumCols);
+            Matrix.init(m_iNumRows, m_iNumCols);
         }
 
         ~MatrixData() 
@@ -114,8 +114,8 @@ SUITE(Matrix)
         CMatrix TestMatrix;
         CMatrix Result;
         float afArray[4] = {5,4,3,1};
-        Result.initialize(1,1);
-        TestMatrix.initialize(4,1);
+        Result.init(1,1);
+        TestMatrix.init(4,1);
 
         TestMatrix.setCol (0,afArray,4);
         //[ 0 0 0 0

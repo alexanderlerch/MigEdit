@@ -85,7 +85,7 @@ SUITE(RingBuff)
         {
             m_pCRingBuffer->putPostInc (m_pfData[i]);
         }
-        m_pCRingBuffer->resetInstance ();
+        m_pCRingBuffer->reset ();
         CHECK_EQUAL(0, m_pCRingBuffer->getNumValuesInBuffer());
 
         for (int i = 0; i < m_iRingBuffLength; i++)

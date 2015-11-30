@@ -13,7 +13,7 @@ using namespace std;
 // consts
 const long long int CAudioFileIf::m_kiDefBlockLength      = 1024;
 
-Error_t CAudioFileIf::createInstance( CAudioFileIf*& pCInstance )
+Error_t CAudioFileIf::create( CAudioFileIf*& pCInstance )
 {
 #ifdef WITH_SNDLIB
     pCInstance   = new CAudioFileSndLib ();
@@ -27,7 +27,7 @@ Error_t CAudioFileIf::createInstance( CAudioFileIf*& pCInstance )
     return kNoError;
 }
 
-Error_t CAudioFileIf::destroyInstance( CAudioFileIf*& pCInstance )
+Error_t CAudioFileIf::destroy( CAudioFileIf*& pCInstance )
 {
     delete pCInstance;
     pCInstance  = 0;
@@ -48,7 +48,7 @@ CAudioFileIf::~CAudioFileIf()
 {
 }
 
-Error_t CAudioFileIf::resetInstance( bool bFreeMemory /*= false*/ )
+Error_t CAudioFileIf::reset( bool bFreeMemory /*= false*/ )
 {
     Error_t eErr = closeFile ();
     if (eErr != kNoError)

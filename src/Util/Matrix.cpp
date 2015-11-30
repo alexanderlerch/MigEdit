@@ -16,7 +16,7 @@ CMatrix::CMatrix () :
 CMatrix::CMatrix( const CMatrix &other ) :
     m_ppfMatrix(0)
 {
-    initialize(other.getNumRows(), other.getNumCols());
+    init(other.getNumRows(), other.getNumCols());
     for (int i = 0; i < m_aiMatrixDimensions[kRow]; i++)
         other.getRow(i, m_ppfMatrix[i], m_aiMatrixDimensions[kCol]);
 }
@@ -48,7 +48,7 @@ CMatrix::MatrixError_t CMatrix::reset ()
 }
 
 
-CMatrix::MatrixError_t   CMatrix::initialize (int iNumRows, int iNumCols)
+CMatrix::MatrixError_t   CMatrix::init (int iNumRows, int iNumCols)
 {
     int i;
 
@@ -120,7 +120,7 @@ float        CMatrix::getElement (int iRow, int iCol) const
 
 CMatrix::MatrixError_t   CMatrix::setRow (int iRow, const float *pfValues, int iNumOfValues)
 {
-    if(!isIndexValid(iRow, 0) || iNumOfValues != m_aiMatrixDimensions[kCol])
+    if(!isIndexValid(iRow, 0) || iNumOfValues != m_aiMatrixDimensions[kCol] || !pfValues)
         return kMatrixIllegalFunctionParam;
 
     assert (m_ppfMatrix != 0);
@@ -133,7 +133,7 @@ CMatrix::MatrixError_t   CMatrix::setRow (int iRow, const float *pfValues, int i
 
 CMatrix::MatrixError_t   CMatrix::getRow (int iRow, float *pfValues, int iNumOfValues) const
 {
-    if(!isIndexValid(iRow, 0) || iNumOfValues != m_aiMatrixDimensions[kCol])
+    if(!isIndexValid(iRow, 0) || iNumOfValues != m_aiMatrixDimensions[kCol] || !pfValues)
         return kMatrixIllegalFunctionParam;
 
     assert (m_ppfMatrix != 0);
@@ -146,7 +146,7 @@ CMatrix::MatrixError_t   CMatrix::getRow (int iRow, float *pfValues, int iNumOfV
 
 CMatrix::MatrixError_t   CMatrix::setCol (int iCol, const float *pfValues, int iNumOfValues)
 {
-    if(!isIndexValid(0, iCol) || iNumOfValues != m_aiMatrixDimensions[kRow])
+    if(!isIndexValid(0, iCol) || iNumOfValues != m_aiMatrixDimensions[kRow] || !pfValues)
         return kMatrixIllegalFunctionParam;
 
     assert (m_ppfMatrix != 0);
@@ -168,7 +168,7 @@ CMatrix::MatrixError_t CMatrix::setZero()
 
 CMatrix::MatrixError_t   CMatrix::getCol (int iCol, float *pfValues, int iNumOfValues) const
 {
-    if(!isIndexValid(0, iCol) || iNumOfValues != m_aiMatrixDimensions[kRow])
+    if(!isIndexValid(0, iCol) || iNumOfValues != m_aiMatrixDimensions[kRow] || !pfValues)
         return kMatrixIllegalFunctionParam;
 
     assert (m_ppfMatrix != 0);
@@ -184,7 +184,7 @@ CMatrix& CMatrix::operator=(const CMatrix &other)
     if(this == &other)
         return *this;
 
-    initialize(other.getNumRows(), other.getNumCols());
+    init(other.getNumRows(), other.getNumCols());
     for (int i = 0; i < m_aiMatrixDimensions[kRow]; i++)
         other.getRow(i, m_ppfMatrix[i], m_aiMatrixDimensions[kCol]);
     return *this;
@@ -198,7 +198,7 @@ CMatrix CMatrix::operator+(const CMatrix &other) const
 
     if (m_aiMatrixDimensions[kRow] == other.getNumRows() && m_aiMatrixDimensions[kCol] == other.getNumCols())
     { 
-        TmpMatrix.initialize(m_aiMatrixDimensions[kRow], m_aiMatrixDimensions[kCol]);
+        TmpMatrix.init(m_aiMatrixDimensions[kRow], m_aiMatrixDimensions[kCol]);
 
         for (int i = 0; i < m_aiMatrixDimensions[kRow]; i++)
         {
@@ -218,7 +218,7 @@ CMatrix CMatrix::operator-(const CMatrix &other) const
 
     if (m_aiMatrixDimensions[kRow] == other.getNumRows() && m_aiMatrixDimensions[kCol] == other.getNumCols())
     { 
-        TmpMatrix.initialize(m_aiMatrixDimensions[kRow], m_aiMatrixDimensions[kCol]);
+        TmpMatrix.init(m_aiMatrixDimensions[kRow], m_aiMatrixDimensions[kCol]);
 
         for (int i = 0; i < m_aiMatrixDimensions[kRow]; i++)
         {
@@ -238,7 +238,7 @@ CMatrix CMatrix::operator*(const CMatrix &other) const
 
     if (m_aiMatrixDimensions[kCol] == other.getNumRows())
     { 
-        TmpMatrix.initialize(m_aiMatrixDimensions[kRow], other.getNumCols());
+        TmpMatrix.init(m_aiMatrixDimensions[kRow], other.getNumCols());
 
         for (int i = 0; i < m_aiMatrixDimensions[kRow]; i++)
         {
@@ -288,7 +288,7 @@ CMatrix CMatrix::operator+(const float fValue) const
 { 
     CMatrix TmpMatrix;
 
-    TmpMatrix.initialize(m_aiMatrixDimensions[kRow], m_aiMatrixDimensions[kCol]);
+    TmpMatrix.init(m_aiMatrixDimensions[kRow], m_aiMatrixDimensions[kCol]);
 
     for (int i = 0; i < m_aiMatrixDimensions[kRow]; i++)
     {
@@ -304,7 +304,7 @@ CMatrix CMatrix::operator-(const float fValue) const
 { 
     CMatrix TmpMatrix;
 
-    TmpMatrix.initialize(m_aiMatrixDimensions[kRow], m_aiMatrixDimensions[kCol]);
+    TmpMatrix.init(m_aiMatrixDimensions[kRow], m_aiMatrixDimensions[kCol]);
 
     for (int i = 0; i < m_aiMatrixDimensions[kRow]; i++)
     {
@@ -319,7 +319,7 @@ CMatrix CMatrix::operator-(const float fValue) const
 CMatrix CMatrix::operator*(const float fValue) const
 { 
     CMatrix TmpMatrix;
-    TmpMatrix.initialize(m_aiMatrixDimensions[kRow], m_aiMatrixDimensions[kCol]);
+    TmpMatrix.init(m_aiMatrixDimensions[kRow], m_aiMatrixDimensions[kCol]);
 
     for (int i = 0; i < m_aiMatrixDimensions[kRow]; i++)
     {

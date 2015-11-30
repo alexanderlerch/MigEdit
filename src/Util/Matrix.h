@@ -1,5 +1,5 @@
-#if !defined(__MatrixView_hdr__)
-#define __MatrixView_hdr__
+#if !defined(__Matrix_hdr__)
+#define __Matrix_hdr__
 
 
 class CMatrix
@@ -27,7 +27,7 @@ public:
     virtual ~CMatrix ();
     CMatrix (const CMatrix &other);
 
-    MatrixError_t   initialize (int iNumRows, int iNumColumns);
+    MatrixError_t   init (int iNumRows, int iNumColumns);
     MatrixError_t   reset ();
 
     int             getNumRows () const;

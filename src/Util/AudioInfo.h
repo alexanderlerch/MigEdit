@@ -27,25 +27,25 @@ public:
     \param CAudioInfo * & pCAudioInfo: pointer to the new instance
     \return Error_t
     */
-    static Error_t createInstance (CAudioInfo*& pCAudioInfo);
+    static Error_t create (CAudioInfo*& pCAudioInfo);
     
     /*! destroys an AudioInfo instance
     \param CAudioInfo * & pCAudioInfo: pointer to the instance to be destroyed
     \return Error_t
     */
-    static Error_t destroyInstance (CAudioInfo*& pCAudioInfo);
+    static Error_t destroy (CAudioInfo*& pCAudioInfo);
     
     /*! initializes an AudioInfo instance
     \param float fSamplerate: audio sample rate
     \param int iNumChannels: number of channels
     \return Error_t
     */
-    Error_t initInstance (float fSampleRate, int iNumChannels);
+    Error_t init (float fSampleRate, int iNumChannels);
     
     /*! resets an AudioInfo instance
     \return Error_t
     */
-    Error_t resetInstance ();
+    Error_t reset ();
  
     Error_t process (float **ppfAudio, long long int iLength);
 

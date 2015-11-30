@@ -12,10 +12,10 @@ CPreproc::CPreproc() :
     for (int i = 0; i < kNumPreprocSteps; i++)
         m_abIsStepActive[i] = false;
 
-    resetInstance ();
+    reset ();
 }
 
-Error_t CPreproc::createInstance( CPreproc*& pCPreproc )
+Error_t CPreproc::create( CPreproc*& pCPreproc )
 {
     pCPreproc = new CPreproc ();
 
@@ -25,7 +25,7 @@ Error_t CPreproc::createInstance( CPreproc*& pCPreproc )
     return kNoError;
 }
 
-Error_t CPreproc::destroyInstance( CPreproc*& pCPreproc )
+Error_t CPreproc::destroy( CPreproc*& pCPreproc )
 {
     if (!pCPreproc)
         return kNoError;
@@ -36,7 +36,7 @@ Error_t CPreproc::destroyInstance( CPreproc*& pCPreproc )
     return kNoError;
 }
 
-Error_t CPreproc::initInstance (const CAudioInfo* phAudioInfo)
+Error_t CPreproc::init (const CAudioInfo* phAudioInfo)
 {
     Error_t  rErr = kNoError;
 
@@ -45,7 +45,7 @@ Error_t CPreproc::initInstance (const CAudioInfo* phAudioInfo)
         return kFunctionInvalidArgsError;
 
     // clean up
-    resetInstance();
+    reset();
 
     m_phAudioInfo       = phAudioInfo;
     m_bIsInitialized    = true;
@@ -53,7 +53,7 @@ Error_t CPreproc::initInstance (const CAudioInfo* phAudioInfo)
     return rErr;
 }
 
-Error_t CPreproc::resetInstance()
+Error_t CPreproc::reset()
 {
     
     m_bIsInitialized    = false;

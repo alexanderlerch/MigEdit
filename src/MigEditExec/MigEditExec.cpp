@@ -88,15 +88,15 @@ int main(int argc, char* argv[])
     _controlfp(~(_EM_INVALID | _EM_ZERODIVIDE | _EM_OVERFLOW | _EM_UNDERFLOW | _EM_DENORMAL), _MCW_EM) ;
 #endif // #ifndef WITHOUT_EXCEPTIONS
 
-    CCommandLineOptions::createInstance(phClArgs);
-    CAudioFileIf::createInstance(phInputFile);
-    CAudioInfo::createInstance(phAudioInfo);
+    CCommandLineOptions::create(phClArgs);
+    CAudioFileIf::create(phInputFile);
+    CAudioInfo::create(phAudioInfo);
 
     showClInfo ();
 
     //////////////////////////////////////////////////////////////////////////////
     // parse command line arguments
-    phClArgs->initInstance(MyOptions, kNumClOptions);
+    phClArgs->init(MyOptions, kNumClOptions);
     phClArgs->process(argc, argv);
 
     if (phClArgs->isOptionSet(kInputName))
@@ -133,7 +133,7 @@ int main(int argc, char* argv[])
     phInputFile->readData(ppfAudioData, iInFileLength);
 
     // get audio info
-    phAudioInfo->initInstance(stFileSpec.fSampleRateInHz, stFileSpec.iNumChannels);
+    phAudioInfo->init(stFileSpec.fSampleRateInHz, stFileSpec.iNumChannels);
     phAudioInfo->process(ppfAudioData,iInFileLength);
 
     for (int i = 0; i < CAudioInfo::kNumInfoTypes; i++)
@@ -158,9 +158,9 @@ int main(int argc, char* argv[])
     delete [] ppfAudioData ;
 
     // close the files
-    CAudioFileIf::destroyInstance(phInputFile);
-    CCommandLineOptions::destroyInstance(phClArgs);
-    CAudioInfo::destroyInstance(phAudioInfo);
+    CAudioFileIf::destroy(phInputFile);
+    CCommandLineOptions::destroy(phClArgs);
+    CAudioInfo::destroy(phAudioInfo);
 
     return 0;
     

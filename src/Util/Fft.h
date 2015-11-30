@@ -29,13 +29,13 @@ public:
     \param CFft * & pCFft: pointer to the new instance
     \return Error_t
     */
-    static Error_t createInstance (CFft*& pCFft);
+    static Error_t create (CFft*& pCFft);
     
     /*! destroys an FFT instance
     \param CFft * & pCFft: pointer to the instance to be destroyed
     \return Error_t
     */
-    static Error_t destroyInstance (CFft*& pCFft);
+    static Error_t destroy (CFft*& pCFft);
     
     /*! initializes an FFT instance
     \param int iBlockLength: input data block length in Frames
@@ -44,12 +44,12 @@ public:
     \param Windowing_t eWindowing: apply window before FFT, after IFFT, or both
     \return Error_t
     */
-    Error_t initInstance (int iBlockLength, int iZeroPadFactor = 1, WindowFunction_t eWindow = kWindowHann, Windowing_t eWindowing = kPreWindow);
+    Error_t init (int iBlockLength, int iZeroPadFactor = 1, WindowFunction_t eWindow = kWindowHann, Windowing_t eWindowing = kPreWindow);
     
     /*! resets an FFT instance
     \return Error_t
     */
-    Error_t resetInstance ();
+    Error_t reset ();
  
     /*! use a customized window
     \param const float * pfNewWindow: window data of length iBlockLength (\sa initInstance)

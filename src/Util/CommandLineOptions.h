@@ -55,25 +55,25 @@ public:
     \param CCommandLineOptions * & pCCommandLineOptions: pointer to the new instance
     \return Error_t
     */
-    static Error_t createInstance (CCommandLineOptions*& pCCommandLineOptions);
+    static Error_t create (CCommandLineOptions*& pCCommandLineOptions);
     
     /*! destroys an CommandLineOptions instance
     \param CCommandLineOptions * & pCCommandLineOptions: pointer to the instance to be destroyed
     \return Error_t
     */
-    static Error_t destroyInstance (CCommandLineOptions*& pCCommandLineOptions);
+    static Error_t destroy (CCommandLineOptions*& pCCommandLineOptions);
     
     /*! initializes an CommandLineOptions instance
     \param argc number of cl arguments
     \param argv arguments
     \return Error_t
     */
-    Error_t initInstance (const COption myOptions[], int iNumOfOptions);
+    Error_t init (const COption myOptions[], int iNumOfOptions);
     
     /*! resets an CommandLineOptions instance
     \return Error_t
     */
-    Error_t resetInstance ();
+    Error_t reset ();
 
     /*! parses the command line arguments
     \param int argc

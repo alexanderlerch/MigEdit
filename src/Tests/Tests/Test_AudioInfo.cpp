@@ -19,14 +19,14 @@ SUITE(AudioInfo)
             m_pfBuff1   = new float [m_iAudioInfoLength];
             m_pfBuff2   = new float [m_iAudioInfoLength];
 
-            CAudioInfo::createInstance(m_pCAudioInfoInstance);
-            m_pCAudioInfoInstance->initInstance(m_fSampleRate, 1);
+            CAudioInfo::create(m_pCAudioInfoInstance);
+            m_pCAudioInfoInstance->init(m_fSampleRate, 1);
         }
 
         ~AudioInfoData() 
         {
-            m_pCAudioInfoInstance->resetInstance();
-            CAudioInfo::destroyInstance(m_pCAudioInfoInstance);
+            m_pCAudioInfoInstance->reset();
+            CAudioInfo::destroy(m_pCAudioInfoInstance);
 
             delete [] m_pfBuff1;
             delete [] m_pfBuff2;
@@ -68,7 +68,7 @@ SUITE(AudioInfo)
             m_pfBuff1[i]   -= .6F;
         }
 
-        m_pCAudioInfoInstance->initInstance(m_fSampleRate, 1);
+        m_pCAudioInfoInstance->init(m_fSampleRate, 1);
         m_pCAudioInfoInstance->process(&m_pfBuff1, m_iAudioInfoLength);
 
         m_pCAudioInfoInstance->getResult (dResult, CAudioInfo::kMax);
@@ -133,13 +133,13 @@ SUITE(AudioInfo)
         double dResult = 0;
         CUtil::setZero(m_pfBuff1, m_iAudioInfoLength);
 
-        m_pCAudioInfoInstance->resetInstance();
+        m_pCAudioInfoInstance->reset();
 
         CHECK_EQUAL(kNotInitializedError, m_pCAudioInfoInstance->process(&m_pfBuff1, m_iAudioInfoLength));
         CHECK_EQUAL(kNotInitializedError, m_pCAudioInfoInstance->getResult (dResult, CAudioInfo::kMax));
-        CHECK_EQUAL(kFunctionInvalidArgsError, m_pCAudioInfoInstance->initInstance(-1, 1));
+        CHECK_EQUAL(kFunctionInvalidArgsError, m_pCAudioInfoInstance->init(-1, 1));
 
-        m_pCAudioInfoInstance->initInstance(m_fSampleRate, 1);
+        m_pCAudioInfoInstance->init(m_fSampleRate, 1);
 
         CHECK_EQUAL(kFunctionInvalidArgsError, m_pCAudioInfoInstance->process(0, m_iAudioInfoLength));
         CHECK_EQUAL(kFunctionInvalidArgsError, m_pCAudioInfoInstance->process(&m_pfBuff1, -1));
@@ -170,7 +170,7 @@ SUITE(AudioInfo)
         {
             m_pfBuff2[i]   -= .6F;
         }
-        m_pCAudioInfoInstance->initInstance(m_fSampleRate, iNumChannels);
+        m_pCAudioInfoInstance->init(m_fSampleRate, iNumChannels);
 
         m_pCAudioInfoInstance->process(ppfAudioData, m_iAudioInfoLength);
 

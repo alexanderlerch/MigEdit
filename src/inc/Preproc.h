@@ -21,22 +21,22 @@ public:
     \param CPreproc * & pCInstance: pointer to the new instance
     \return Error_t
     */
-    static Error_t createInstance (CPreproc*& pCInstance);
+    static Error_t create (CPreproc*& pCInstance);
     /*! destroys a CPreproc instance
     \param CPreproc * & pCInstance: pointer to instance to be destroyed
     \return Error_t
     */
-    static Error_t destroyInstance (CPreproc*& pCInstance);
+    static Error_t destroy (CPreproc*& pCInstance);
     
     /*! initializes the class
     \param const CAudioInfo * pAudioInfo: class handle for info on the audio signal
     \return Error_t
     */
-    Error_t initInstance (const CAudioInfo* pAudioInfo);
+    Error_t init (const CAudioInfo* pAudioInfo);
     /*! resets the instance
     \return Error_t
     */
-    Error_t resetInstance ();
+    Error_t reset ();
 
     /*! enables or disables a processing step
     \param PreprocSteps_t eStep: step to be set
