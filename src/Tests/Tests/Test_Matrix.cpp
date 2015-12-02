@@ -203,7 +203,22 @@ SUITE(Matrix)
             }
         }
     }
-
+    TEST_FIXTURE(MatrixData, Norm)
+    {
+        for (int i = 0; i < m_iNumRows; i++)
+        {
+            for (int j = 0; j < m_iNumCols; j++)
+            {
+                m_ppfBuff[i][j] = static_cast<float>(i*j);
+                Matrix.setElement(i,j, static_cast<float>(m_ppfBuff[i][j]));
+            }
+        }
+        CHECK_CLOSE(9, Matrix.getNorm(1), 1e-4);
+        CHECK_CLOSE(8.36660, Matrix.getNorm(2), 1e-4);
+        Matrix.transpose();
+        CHECK_CLOSE(9, Matrix.getNorm(1), 1e-4);
+        CHECK_CLOSE(8.36660, Matrix.getNorm(2), 1e-4);
+    }
 }
 
 #endif //WITH_TESTS

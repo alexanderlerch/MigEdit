@@ -59,6 +59,8 @@ public:
     CMatrix operator - (const float fValue) const;
     CMatrix operator * (const float fValue) const;
 
+    float getNorm(int p) const;
+
 private:
     const float*    getRow (int iRow) const;
     bool isIndexValid( int iRow, int iCol ) const

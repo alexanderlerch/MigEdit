@@ -81,7 +81,7 @@ public:
             pSrcDest[i] *= pSrc[i];
     }
 
-    static float mulBuffScalar (float *pSrc1, const float *pSrc2, int iLength)
+    static float mulBuffScalar (const float *pSrc1, const float *pSrc2, int iLength)
     {
         assert (iLength >= 0);
         assert (pSrc1);
@@ -125,6 +125,17 @@ public:
 
         for (int i = 0; i < iLength; i++)
             pSrcDest[i] -= pSrc[i];
+    }
+
+    static float sum (float *pSrc, int iLength)
+    {
+        assert (iLength >= 0);
+        assert (pSrc);
+
+        float fResult = 0;
+        for (int i = 0; i < iLength; i++)
+           fResult += pSrc[i];
+        return fResult;
     }
 
     static bool isBuffEqual (float *pSrc1, const float *pSrc2, int iLength)

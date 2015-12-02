@@ -412,3 +412,41 @@ CMatrix::MatrixError_t CMatrix::subByElement( const CMatrix &other )
 
     return kMatrixNoError;
 }
+
+float CMatrix::getNorm( int p ) const
+{
+    if (p<=0)
+        return -1;
+
+    float fResult = 0;
+
+    if (p==1)
+    {
+        for (int j = 0; j < m_aiMatrixDimensions[kCol]; j++)
+        {
+            float fTmp = 0;
+            for (int i = 0; i < m_aiMatrixDimensions[kRow]; i++)
+                fTmp += abs(m_ppfMatrix[i][j]);
+
+            if (fTmp > fResult)
+                fResult = fTmp;
+        }
+    }
+    else if (p == 2)
+    {
+        for (int i = 0; i < m_aiMatrixDimensions[kRow]; i++)
+            fResult += CUtil::mulBuffScalar(m_ppfMatrix[i], m_ppfMatrix[i], m_aiMatrixDimensions[kCol]);
+
+        fResult = sqrt(fResult);
+    }
+    else
+    {
+        for (int i = 0; i < m_aiMatrixDimensions[kRow]; i++)
+            for (int j = 0; j < m_aiMatrixDimensions[kCol]; j++)
+                fResult += pow(m_ppfMatrix[i][j], 1.F*p);
+
+        fResult = pow(fResult, 1.F/p);
+    }
+
+    return fResult;
+}
