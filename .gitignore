@@ -54,3 +54,4 @@
 /3rdparty/sndlib/wz_data.js
 /3rdparty/sndlib/wz_tooltip.js
 /lib/release/*.exp
+/src/Util/*.bak

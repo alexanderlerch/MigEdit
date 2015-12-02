@@ -62,7 +62,7 @@ public:
             memmove (&pSrcDest[iDestIdx], &pSrcDest[iSrcIdx], sizeof(T)*iLength);
     }
 
-    static void multBuffC (float *pSrcDest, float fScale, int iLength)
+    static void mulBuffC (float *pSrcDest, float fScale, int iLength)
     {
         assert (iLength >= 0);
         assert (pSrcDest);
@@ -71,7 +71,7 @@ public:
             pSrcDest[i] *= fScale;
     }
 
-    static void multBuff (float *pSrcDest, const float *pSrc, int iLength)
+    static void mulBuff (float *pSrcDest, const float *pSrc, int iLength)
     {
         assert (iLength >= 0);
         assert (pSrcDest);
@@ -81,7 +81,7 @@ public:
             pSrcDest[i] *= pSrc[i];
     }
 
-    static float multBuffScalar (float *pSrc1, const float *pSrc2, int iLength)
+    static float mulBuffScalar (float *pSrc1, const float *pSrc2, int iLength)
     {
         assert (iLength >= 0);
         assert (pSrc1);
@@ -94,6 +94,19 @@ public:
         return fResult;
     }
 
+    static void divBuff (float *pSrcDest, const float *pSrc, int iLength)
+    {
+        assert (iLength >= 0);
+        assert (pSrcDest);
+        assert (pSrc);
+
+        for (int i = 0; i < iLength; i++)
+        {
+            assert(pSrc[i] != 0);
+            pSrcDest[i] /= pSrc[i];
+        }
+    }
+
     static void addBuff (float *pSrcDest, const float *pSrc, int iLength)
     {
         assert (iLength >= 0);
@@ -102,6 +115,16 @@ public:
 
         for (int i = 0; i < iLength; i++)
             pSrcDest[i] += pSrc[i];
+    }
+
+    static void subBuff (float *pSrcDest, const float *pSrc, int iLength)
+    {
+        assert (iLength >= 0);
+        assert (pSrcDest);
+        assert (pSrc);
+
+        for (int i = 0; i < iLength; i++)
+            pSrcDest[i] -= pSrc[i];
     }
 
     static bool isBuffEqual (float *pSrc1, const float *pSrc2, int iLength)

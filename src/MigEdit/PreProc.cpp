@@ -122,7 +122,7 @@ Error_t CPreproc::downmix( float **ppfInBuff, float *pfOutBuff, int iNumOfFrames
     for (int c = 1; c < iNumChannels; c++)
         CUtil::addBuff (pfOutBuff, ppfInBuff[c], iNumOfFrames);
 
-    CUtil::multBuffC(pfOutBuff, 1.F/iNumChannels, iNumOfFrames);
+    CUtil::mulBuffC(pfOutBuff, 1.F/iNumChannels, iNumOfFrames);
 
     return kNoError;
 }
@@ -155,7 +155,7 @@ Error_t CPreproc::normalize( float *pfInBuff, float *pfOutBuff, int iNumOfFrames
     if (dMax > 0)
     {
         CUtil::copyBuff(pfOutBuff, pfInBuff, iNumOfFrames);
-        CUtil::multBuffC(pfOutBuff, static_cast<float>(1./dMax), iNumOfFrames);
+        CUtil::mulBuffC(pfOutBuff, static_cast<float>(1./dMax), iNumOfFrames);
     }
 
     return kNoError;

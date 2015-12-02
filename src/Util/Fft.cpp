@@ -120,7 +120,7 @@ Error_t CFft::doFft( complex_t *pfSpectrum, const float *pfInput )
 
     // apply window function
     if (m_ePrePostWindowOpt & kPreWindow)
-        CUtil::multBuff(m_pfProcessBuff, m_pfWindowBuff, m_iDataLength);
+        CUtil::mulBuff(m_pfProcessBuff, m_pfWindowBuff, m_iDataLength);
 
     // compute fft
     LaszloFft::realfft_split(m_pfProcessBuff, m_iFftLength);
@@ -144,7 +144,7 @@ Error_t CFft::doInvFft( float *pfOutput, const complex_t *pfSpectrum )
 
     // apply window function
     if (m_ePrePostWindowOpt & kPostWindow)
-        CUtil::multBuff(m_pfProcessBuff, m_pfWindowBuff, m_iDataLength);
+        CUtil::mulBuff(m_pfProcessBuff, m_pfWindowBuff, m_iDataLength);
 
     // copy data to output buffer
     CUtil::copyBuff(pfOutput, m_pfProcessBuff, m_iFftLength);
