@@ -109,7 +109,7 @@ SUITE(Matrix)
         }
         CHECK_EQUAL(CMatrix::kMatrixIllegalFunctionParam, Matrix.setElement(m_iNumRows,1, static_cast<float>(m_iNumRows)));
     }
-     TEST_FIXTURE(MatrixData, Operators)
+    TEST_FIXTURE(MatrixData, Operators)
     {
         CMatrix TestMatrix;
         CMatrix Result;
@@ -182,6 +182,26 @@ SUITE(Matrix)
         }
 
         TestMatrix = TestMatrix;
+    }
+    TEST_FIXTURE(MatrixData, Transpose)
+    {
+        for (int i = 0; i < m_iNumRows; i++)
+        {
+            for (int j = 0; j < m_iNumCols; j++)
+            {
+                m_ppfBuff[i][j] = static_cast<float>(i*j);
+                Matrix.setElement(i,j, static_cast<float>(m_ppfBuff[i][j]));
+            }
+        }
+        Matrix.transpose();
+
+        for (int i = 0; i < m_iNumRows; i++)
+        {
+            for (int j = 0; j < m_iNumCols; j++)
+            {
+                CHECK_EQUAL(m_ppfBuff[i][j],Matrix.getElement(j,i));
+            }
+        }
     }
 
 }

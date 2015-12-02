@@ -27,13 +27,13 @@ public:
     virtual ~CMatrix ();
     CMatrix (const CMatrix &other);
 
+    void assign( const CMatrix &other );
+
     MatrixError_t   init (int iNumRows, int iNumColumns);
     MatrixError_t   reset ();
 
     int             getNumRows () const;
     int             getNumCols () const;
-
-    MatrixError_t   setZero ();
 
     MatrixError_t   setElement (int iRow, int iCol, float fValue);
     float           getElement (int iRow, int iCol) const;
@@ -41,6 +41,14 @@ public:
     MatrixError_t   getRow (int iRow, float *pfValues, int iNumValues) const;
     MatrixError_t   setCol (int iCol, const float *pfValues, int iNumValues);
     MatrixError_t   getCol (int iCol, float *pfValues, int iNumValues) const;
+
+    MatrixError_t   setZero ();
+    MatrixError_t   transpose ();
+
+    MatrixError_t   mulByElement(const CMatrix &other);
+    MatrixError_t   divByElement(const CMatrix &other);
+    MatrixError_t   addByElement(const CMatrix &other);
+    MatrixError_t   subByElement(const CMatrix &other);
 
     CMatrix& operator = (const CMatrix &other);
     CMatrix operator + (const CMatrix &other) const;
@@ -52,6 +60,7 @@ public:
     CMatrix operator * (const float fValue) const;
 
 private:
+    const float*    getRow (int iRow) const;
     bool isIndexValid( int iRow, int iCol ) const
     {
         if ((iRow >= m_aiMatrixDimensions[kRow]) || (iCol >= m_aiMatrixDimensions[kCol]) || iRow < 0 || iCol < 0)
