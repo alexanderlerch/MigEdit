@@ -24,12 +24,13 @@ public:
         kMatrixNumErrors
     };
     CMatrix ();
+    CMatrix(int iNumRows, int iNumCols);
     virtual ~CMatrix ();
     CMatrix (const CMatrix &other);
 
     void assign( const CMatrix &other );
 
-    MatrixError_t   init (int iNumRows, int iNumColumns);
+    MatrixError_t   init (int iNumRows, int iNumCols);
     MatrixError_t   reset ();
 
     int             getNumRows () const;
@@ -43,7 +44,9 @@ public:
     MatrixError_t   getCol (int iCol, float *pfValues, int iNumValues) const;
 
     MatrixError_t   setZero ();
+    MatrixError_t   setRand ();
     MatrixError_t   transpose ();
+    MatrixError_t   normalize (int p = 1);
 
     MatrixError_t   mulByElement(const CMatrix &other);
     MatrixError_t   divByElement(const CMatrix &other);
@@ -59,7 +62,8 @@ public:
     CMatrix operator - (const float fValue) const;
     CMatrix operator * (const float fValue) const;
 
-    float getNorm(int p) const;
+    float getNorm(int p = 1) const;
+
 
 private:
     const float*    getRow (int iRow) const;

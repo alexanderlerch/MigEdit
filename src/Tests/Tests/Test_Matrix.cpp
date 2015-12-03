@@ -96,6 +96,12 @@ SUITE(Matrix)
         CHECK_EQUAL(0, TestMatrix.getNumRows());
         CHECK_EQUAL(0, TestMatrix.getNumCols());
 
+        CHECK_EQUAL(0, TestMatrix.getNorm());
+        
+        CMatrix Test2 = TestMatrix * TestMatrix * 2.F;
+        CHECK_EQUAL(0, Test2.getNumRows());
+        CHECK_EQUAL(0, Test2.getNumCols());
+
         CHECK_EQUAL(CMatrix::kMatrixIllegalFunctionParam, TestMatrix.getRow(2,afArray, m_iNumCols));
 
 
@@ -216,7 +222,7 @@ SUITE(Matrix)
         CHECK_CLOSE(9, Matrix.getNorm(1), 1e-4);
         CHECK_CLOSE(8.36660, Matrix.getNorm(2), 1e-4);
         Matrix.transpose();
-        CHECK_CLOSE(9, Matrix.getNorm(1), 1e-4);
+        CHECK_CLOSE(12, Matrix.getNorm(1), 1e-4);
         CHECK_CLOSE(8.36660, Matrix.getNorm(2), 1e-4);
     }
 }

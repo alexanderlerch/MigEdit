@@ -2,6 +2,7 @@
 #include <cassert>
 
 #include "Util.h"
+#include "SignalGen.h"
 #include "Matrix.h"
 
 
@@ -17,6 +18,15 @@ CMatrix::CMatrix( const CMatrix &other ) :
     m_ppfMatrix(0)
 {
     assign(other);
+}
+
+CMatrix::CMatrix( int iNumRows, int iNumColumns ) :
+    m_ppfMatrix(0)
+{
+    m_aiMatrixDimensions[kRow]  = 0;
+    m_aiMatrixDimensions[kCol]  = 0;
+
+    init(iNumRows, iNumColumns);
 }
 
 
@@ -351,8 +361,10 @@ CMatrix::MatrixError_t CMatrix::transpose()
         for (int j = 0; j < iNumOldCols; j++)
         {
             MatrixError_t rErr = NewMatrix.setElement(j, i, this->getElement(i, j));
-            if (rErr != kMatrixNoError)
-                return rErr;
+
+            assert (rErr == kMatrixNoError);
+            //if (rErr != kMatrixNoError)
+            //    return rErr;
         }
     }
 
@@ -413,7 +425,7 @@ CMatrix::MatrixError_t CMatrix::subByElement( const CMatrix &other )
     return kMatrixNoError;
 }
 
-float CMatrix::getNorm( int p ) const
+float CMatrix::getNorm( int p /*= 1*/ ) const
 {
     if (p<=0)
         return -1;
@@ -449,4 +461,25 @@ float CMatrix::getNorm( int p ) const
     }
 
     return fResult;
+}
+
+CMatrix::MatrixError_t CMatrix::normalize( int p /*= 1*/ )
+{
+    float fNorm = getNorm(p);
+
+    if (fNorm <= 0)
+        return kMatrixNoError;
+
+    for (int i = 0; i < m_aiMatrixDimensions[kRow]; i++)
+        CUtil::mulBuffC(m_ppfMatrix[i], 1.F/fNorm, m_aiMatrixDimensions[kCol]);
+
+    return kMatrixNoError;
+}
+
+CMatrix::MatrixError_t CMatrix::setRand()
+{
+    for (int i = 0; i < m_aiMatrixDimensions[kRow]; i++)
+        CSignalGen::generateNoise(m_ppfMatrix[i], m_aiMatrixDimensions[kCol]);
+
+    return kMatrixNoError;
 }
