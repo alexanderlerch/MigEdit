@@ -62,6 +62,14 @@ public:
             memmove (&pSrcDest[iDestIdx], &pSrcDest[iSrcIdx], sizeof(T)*iLength);
     }
 
+    static void setValue (float *pDest, float fValue, int iLength)
+    {
+        assert (iLength >= 0);
+        assert (pDest);
+
+        for (int i = 0; i < iLength; i++)
+            pDest[i] = fValue;
+    }
     static void mulBuffC (float *pSrcDest, float fScale, int iLength)
     {
         assert (iLength >= 0);
@@ -127,14 +135,22 @@ public:
             pSrcDest[i] -= pSrc[i];
     }
 
-    static float sum (float *pSrc, int iLength)
+    static float sum (float *pSrc, int iLength, bool bAbs = false)
     {
         assert (iLength >= 0);
         assert (pSrc);
 
         float fResult = 0;
-        for (int i = 0; i < iLength; i++)
-           fResult += pSrc[i];
+        if (bAbs)
+        {
+            for (int i = 0; i < iLength; i++)
+                fResult += std::abs(pSrc[i]);
+        }
+        else
+        {
+            for (int i = 0; i < iLength; i++)
+                fResult += pSrc[i];
+        }
         return fResult;
     }
 

@@ -199,7 +199,7 @@ SUITE(Matrix)
                 Matrix.setElement(i,j, static_cast<float>(m_ppfBuff[i][j]));
             }
         }
-        Matrix.transpose();
+        Matrix.transpose_I();
 
         for (int i = 0; i < m_iNumRows; i++)
         {
@@ -221,9 +221,16 @@ SUITE(Matrix)
         }
         CHECK_CLOSE(9, Matrix.getNorm(1), 1e-4);
         CHECK_CLOSE(8.36660, Matrix.getNorm(2), 1e-4);
-        Matrix.transpose();
+        CHECK_CLOSE(18, Matrix.getSum(), 1e-4);
+        CHECK_CLOSE(18, Matrix.getSum(true), 1e-4);
+        Matrix.transpose_I();
         CHECK_CLOSE(12, Matrix.getNorm(1), 1e-4);
         CHECK_CLOSE(8.36660, Matrix.getNorm(2), 1e-4);
+        CHECK_CLOSE(18, Matrix.getSum(), 1e-4);
+
+        Matrix.setElement(3,2,-1*Matrix.getElement(3,2));
+        CHECK_CLOSE(6, Matrix.getSum(false), 1e-4);
+        CHECK_CLOSE(18, Matrix.getSum(true), 1e-4);
     }
 }
 
