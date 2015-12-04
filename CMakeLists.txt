@@ -31,6 +31,7 @@ list (APPEND PROJECT_DIRECTORIES ${CMAKE_SOURCE_DIR}/src/${PROJECT_NAME})
 list (APPEND PROJECT_DIRECTORIES ${CMAKE_SOURCE_DIR}/src/${PROJECT_NAME}Exec)       
 list (APPEND PROJECT_DIRECTORIES ${CMAKE_SOURCE_DIR}/src/AudioFileIO) 
 list (APPEND PROJECT_DIRECTORIES ${CMAKE_SOURCE_DIR}/src/Util) 
+list (APPEND PROJECT_DIRECTORIES ${CMAKE_SOURCE_DIR}/src/Nmf) 
 list (APPEND PROJECT_DIRECTORIES ${CMAKE_SOURCE_DIR}/src/Tests/TestExec) 
     
 # set includes
@@ -90,6 +91,7 @@ if (WITH_TESTS)
 	add_test(InputBuffSrc ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec InputBuffSrc)
 	add_test(Matrix ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec Matrix)
 	add_test(MatrixRepresentation ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec MatrixRepresentation)
+	add_test(Nmf ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec Nmf)
 	add_test(Preproc ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec Preproc)
 	add_test(RingBuff ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec RingBuff)
 
