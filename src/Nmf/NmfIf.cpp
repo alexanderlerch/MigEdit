@@ -113,6 +113,9 @@ CNmfSharedData::~CNmfSharedData()
             m_aapCMatrices[i][j]    = 0;
         }
     }
+    if (m_pfError)
+        delete [] m_pfError;
+    m_pfError   = 0;
 }
 
 Error_t CNmfSharedData::setMatrix( Matrices_t eMatrix, MatrixSplit_t eSplit, const CMatrix *pCMatrix )
