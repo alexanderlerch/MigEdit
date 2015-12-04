@@ -27,4 +27,6 @@ if (MSVC)
 	else ( CMAKE_CL_64 EQUAL 0 )
 		set(GTCMT_WIN64 1)
 	endif ( CMAKE_CL_64 EQUAL 0 )
+    
+    set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Od /fp:precise /EHsc /W4")
 endif (MSVC)
