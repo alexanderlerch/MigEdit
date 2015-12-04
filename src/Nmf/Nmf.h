@@ -21,8 +21,8 @@ private:
 
     static const float m_kMinOffset;
 
-    float *m_pfErr;
-    CNmfSharedData *m_pCConfigAndResults;
+    float *m_phfErr;
+    CNmfSharedData *m_phCConfigAndResults;
 };
 
 #endif // #if !defined(__Nmf_hdr__)

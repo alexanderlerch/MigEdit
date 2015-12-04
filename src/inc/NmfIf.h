@@ -46,6 +46,9 @@ public:
  
     // get result
     int     getResultNumIterations() const;
+    CMatrix getResultMatrix(Matrices_t eMatrix, MatrixSplit_t eSplit) const;
+    float   getResultError() const;
+
 protected:
     CMatrix* getMatrixPtr(Matrices_t eMatrix, MatrixSplit_t eSplit);
     float*  getErrorPtr();

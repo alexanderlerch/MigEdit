@@ -253,6 +253,11 @@ CMatrix* CNmfSharedData::getMatrixPtr( Matrices_t eMatrix, MatrixSplit_t eSplit 
     return m_aapCMatrices[eMatrix][eSplit];
 }
 
+CMatrix CNmfSharedData::getResultMatrix( Matrices_t eMatrix, MatrixSplit_t eSplit ) const
+{
+    return *m_aapCMatrices[eMatrix][eSplit];
+}
+
 float* CNmfSharedData::getErrorPtr()
 {
     return m_pfError;
@@ -271,4 +276,14 @@ int CNmfSharedData::getRank( MatrixSplit_t eSplit ) const
 int CNmfSharedData::getTemplateLength() const
 {
     return m_iTemplateLength;
+}
+
+float CNmfSharedData::getResultError() const
+{
+    if (!m_pfError) 
+        return -1.F;
+
+    assert(m_iNumIterations>=0 && m_iNumIterations < m_iMaxIter);
+
+    return m_pfError[m_iNumIterations];
 }
