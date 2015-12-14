@@ -102,6 +102,10 @@ public:
     */
     Error_t mergeRealImag(complex_t *pfSpectrum, const float *pfReal, const float *pfImag) const;
 
+    Error_t conjCompSpectrum(complex_t *pfConjCompSpectrum, const complex_t *pfSpectrum) const;
+    Error_t mulCompSpectrum(complex_t *pfSrcDest, const complex_t *pfSrc) const;
+
+
     enum Length_t
     {
         kLengthFft,             //!< length of the FFT
@@ -132,7 +136,7 @@ public:
 
 protected:
     CFft ();
-    virtual ~CFft () {};
+    virtual ~CFft() { reset(); };
 
 private:
     CFft(const CFft& that);

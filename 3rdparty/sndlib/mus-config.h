@@ -14,8 +14,10 @@
 
   typedef long off_t;
   #define ssize_t int 
-  #define snprintf _snprintf 
-  #define strtoll strtol
+#if _MSC_VER < 1900
+    #define snprintf _snprintf 
+    #define strtoll strtol
+#endif
 
   #if _MSC_VER > 1200
     #ifndef _CRT_DEFINED

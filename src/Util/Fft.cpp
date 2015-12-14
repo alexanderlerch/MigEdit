@@ -218,6 +218,8 @@ Error_t CFft::mergeRealImag( complex_t *pfSpectrum, const float *pfReal, const f
     if (!m_bIsInitialized)
         return kNotInitializedError;
 
+    assert(pfSpectrum || pfReal || pfImag);
+
     // re(0),re(1),re(2),...,re(size/2),im(size/2-1),...,im(1)
     int iNyq        = m_iFftLength>>1;
 
@@ -230,6 +232,50 @@ Error_t CFft::mergeRealImag( complex_t *pfSpectrum, const float *pfReal, const f
 
     return kNoError;
 }
+
+Error_t CFft::conjCompSpectrum( complex_t *pfConjCompSpectrum, const complex_t *pfSpectrum ) const
+{
+    if (!m_bIsInitialized)
+        return kNotInitializedError;
+
+    assert(pfSpectrum || pfConjCompSpectrum);
+
+    if (pfConjCompSpectrum != pfSpectrum)
+        CUtil::copyBuff(pfConjCompSpectrum, pfSpectrum, m_iFftLength);
+
+    CUtil::mulBuffC(&pfConjCompSpectrum[(m_iFftLength>>1)+1], -1.F, (m_iFftLength>>1)-1);
+
+    return kNoError;
+}
+
+Error_t CFft::mulCompSpectrum( complex_t *pfSrcDest, const complex_t *pfSrc ) const
+{
+    if (!m_bIsInitialized)
+        return kNotInitializedError;
+
+    assert (pfSrcDest || pfSrc );
+
+    // re(0),re(1),re(2),...,re(size/2),im(size/2-1),...,im(1)
+
+    pfSrcDest[0]                *= pfSrc[0];
+    pfSrcDest[m_iFftLength>>1]  *= pfSrc[m_iFftLength>>1];
+
+    for (int i = 1; i < m_iFftLength>>1; i++)
+    {
+        float fTemp = pfSrcDest[i];
+
+        // real part of multiplication
+        pfSrcDest[i] *= pfSrc[i];
+        pfSrcDest[i] -= pfSrcDest[m_iFftLength-i] * pfSrc[m_iFftLength-i];
+
+        // imaginary part of multiplication
+        pfSrcDest[m_iFftLength-i] *= pfSrc[i];
+        pfSrcDest[m_iFftLength-i] += fTemp * pfSrc[m_iFftLength-i];
+    }
+
+    return kNoError;
+}
+
 
 float CFft::freq2bin( float fFreqInHz, float fSampleRateInHz ) const
 {

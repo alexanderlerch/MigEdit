@@ -30,6 +30,21 @@ public:
         return !(n & (n-1));
     }
 
+    static int nextPowOf2(int n)
+    {
+        int iOrder = 0;
+
+        if (n == 0)
+            return 0;
+
+        while (n>>iOrder)
+            iOrder++;
+
+        if (!(n%(1<<(iOrder-1))))
+            iOrder--;
+
+        return (1<<(iOrder));
+    }
 
     template<typename T>
     static void setZero (T *pInput, int iLength)
@@ -41,15 +56,33 @@ public:
             memset (pInput, 0, sizeof(T)*iLength);
     }
     template<typename T>
-    static void copyBuff (T *pDest, const T *pSource, int iLength)
+    static void copyBuff(T *pDest, const T *pSource, int iLength)
     {
-        assert (iLength >= 0);
+        assert(iLength >= 0);
 
         if (iLength > 0)
         {
-            assert (pDest);
-            assert (pSource);
-            memcpy (pDest, pSource, sizeof(T)*iLength);
+            assert(pDest);
+            assert(pSource);
+            memcpy(pDest, pSource, sizeof(T)*iLength);
+        }
+    }
+    template<typename T>
+    static void flipBuff(T *pSrcDest, int iLength)
+    {
+        assert(iLength >= 0);
+
+        if (iLength > 0)
+        {
+            assert(pSrcDest);
+
+            int iLoopLength = iLength / 2; // integer division!
+            for (int i = 0; i < iLoopLength; i++)
+            {
+                T Tmp                       = pSrcDest[i];
+                pSrcDest[i]                 = pSrcDest[iLength - 1 - i];
+                pSrcDest[iLength - 1 - i]   = Tmp;
+            }
         }
     }
     template<typename T>

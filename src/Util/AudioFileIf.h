@@ -3,6 +3,7 @@
 
 #include <string>
 #include <fstream>
+#include <algorithm>
 #include "ErrorDef.h"
 
 /*! \class open, read, and write audio files

@@ -2,6 +2,8 @@
 #include <UnitTest++.h>
 #include "TestReporterStdout.h"
 
+#include "MigEditConfig.h"
+
 // include project headers
 #include "AudioFileIf.h"
 
@@ -36,6 +38,8 @@ int main(int argc, char* argv[])
     iDbgFlag |= _CRTDBG_CHECK_ALWAYS_DF;
     iDbgFlag |= _CRTDBG_LEAK_CHECK_DF;
     _CrtSetDbgFlag( iDbgFlag );
+
+    //_CrtSetBreakAlloc(245);
 #endif
 
     // enable floating point exceptions in win32
@@ -47,7 +51,7 @@ int main(int argc, char* argv[])
     // argument 2 contains the working dir
     if (argc > 2)
         cTestDataDir.assign(argv[2]);
-
+    
     // see http://stackoverflow.com/questions/3546054/how-do-i-run-a-single-test-with-unittest
     if( argc > 1 )
     {

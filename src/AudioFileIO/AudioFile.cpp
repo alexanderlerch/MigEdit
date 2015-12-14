@@ -44,7 +44,7 @@ Error_t CAudioFileRaw::allocMemory()
 {
     freeMemory ();
 
-    m_piTmpBuff = new short [m_kiDefBlockLength];
+    m_piTmpBuff = new short [static_cast<unsigned int>(m_kiDefBlockLength)];
 
     if (!m_piTmpBuff)
         return kMemError;
@@ -524,7 +524,7 @@ Error_t CAudioFileSndLib::allocMemory()
 
     m_ppdTmpBuff    = new double* [iNumChannels];
     for (int i = 0; i < iNumChannels; i++)
-        m_ppdTmpBuff[i] = new double [m_kiDefBlockLength];
+        m_ppdTmpBuff[i] = new double [static_cast<unsigned int>(m_kiDefBlockLength)];
 
     if (!m_ppdTmpBuff)
         return kMemError;

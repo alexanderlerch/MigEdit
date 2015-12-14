@@ -86,6 +86,7 @@ if (WITH_TESTS)
 	# add tests here
 	add_test(AudioInfo ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec AudioInfo)
 	add_test(AudioIo ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec AudioIo "${CMAKE_SOURCE_DIR}/src/Tests/TestData/")
+	add_test(Ccf ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec Ccf)
 	add_test(CommandLineOptions ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec CommandLineOptions )
 	add_test(Fft ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec Fft)
 	add_test(InputBuffSrc ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec InputBuffSrc)
