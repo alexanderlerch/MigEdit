@@ -53,13 +53,14 @@ public:
     MatrixError_t   getCol (int iCol, float *pfValues, int iNumValues) const;
 
     MatrixError_t   setZero ();
-    MatrixError_t setOnes ();
+    MatrixError_t   setZeroBelowThresh (float fThresh = 0);
+    MatrixError_t   setOnes ();
     MatrixError_t   setRand ();
     
     MatrixError_t   transpose_I ();
-    MatrixError_t normalize_I (ActionAppliedTo_t eActionArea = kAll, int p = 1);
+    MatrixError_t   normalize_I (ActionAppliedTo_t eActionArea = kAll, int p = 1);
     CMatrix         transpose ();
-    CMatrix normalize (ActionAppliedTo_t eActionArea = kAll, int p = 1);
+    CMatrix         normalize (ActionAppliedTo_t eActionArea = kAll, int p = 1);
 
     MatrixError_t   mulByOnes_I(int iNumRows, int iNumCols);
     CMatrix         mulByOnes(int iNumRows, int iNumCols);
@@ -83,7 +84,11 @@ public:
     CMatrix operator * (const float fValue) const;
 
     float getNorm(int p = 1) const;
+    float getRowNorm(int iRow, int p = 1) const;
+    float getColNorm(int iCol, int p = 1) const;
     float getSum(bool bAbs = false) const;
+    float getMax(bool bAbs = false) const;
+    void dbgPrint2StdOut() const;
 
 private:
     const float*    getRow (int iRow) const;

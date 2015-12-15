@@ -9,6 +9,7 @@ class CFft;
 
 class CMatrixRepresentationResult
 {
+    friend class CMatrixRepresentation;
 public:
     enum Axes_t
     {
@@ -19,26 +20,27 @@ public:
     };
     CMatrixRepresentationResult();;
     virtual ~CMatrixRepresentationResult();
-    Error_t init(int iNumRows, int iNumCols, int iNumChannels = 1);
     Error_t reset ();
 
-    int getNumRows() const;
-    int getNumCols() const;
-    int getNumChannels() const;
-    Error_t setAxisTickLabels (enum Axes_t eAxis, const float *pfAxisTickLabels, int iNumOfAxisTickLabels);
-    Error_t getAxisTickLabels (enum Axes_t eAxis, float *pfAxisTickLabels, int iNumOfAxisTickLabels) const;
-    Error_t setAxisLabel (enum Axes_t eAxis, std::string sAxisLabel);
+    int         getNumRows() const;
+    int         getNumCols() const;
+    int         getNumChannels() const;
+    Error_t     getAxisTickLabels (enum Axes_t eAxis, float *pfAxisTickLabels, int iNumOfAxisTickLabels) const;
     std::string getAxisLabel (enum Axes_t eAxis) const;
-    Error_t setAxisUnit (enum Axes_t eAxis, std::string sAxisLabel);
     std::string getAxisUnit (enum Axes_t eAxis) const;
 
+    Error_t     getCol (int iCol, float *pfValues, int iNumValues, int iChannelIdx = 0) const;
+    Error_t     getRow (int iRow, float *pfValues, int iNumValues, int iChannelIdx = 0) const;
+    CMatrix*    getResultPtr (int iChannelIdx = 0) ;
+
+protected:
+    Error_t init(int iNumRows, int iNumCols, int iNumChannels = 1);
     Error_t setResultCol (int iCol, const float *pfValues, int iNumValues, int iChannelIdx = 0);
     Error_t setResultRow (int iRow, const float *pfValues, int iNumValues, int iChannelIdx = 0);
     Error_t setResult (const CMatrix & pCValues, int iChannelIdx = 0);
-    Error_t getResultCol (int iCol, float *pfValues, int iNumValues, int iChannelIdx = 0) const;
-    Error_t getResultRow (int iRow, float *pfValues, int iNumValues, int iChannelIdx = 0) const;
-    CMatrix* getResult (int iChannelIdx = 0) ;
-
+    Error_t setAxisTickLabels (enum Axes_t eAxis, const float *pfAxisTickLabels, int iNumOfAxisTickLabels);
+    Error_t setAxisLabel (enum Axes_t eAxis, std::string sAxisLabel);
+    Error_t setAxisUnit (enum Axes_t eAxis, std::string sAxisLabel);
 private:
     std::string m_asLabels[kNumAxes];
     std::string m_asUnits[kNumAxes];

@@ -43,7 +43,7 @@ public:
     \param bool bIsEnabled
     \return Error_t
     */
-    Error_t setStepActive (PreprocSteps_t eStep, bool bIsEnabled);
+    Error_t setStepActive (PreprocSteps_t eStep, bool bIsEnabled = true);
     /*! returns the state of processing steps
     \param PreprocSteps_t eStep: step to be returned the info for
     \return bool

@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 
 #include <UnitTest++.h>
 #include "TestReporterStdout.h"
@@ -10,20 +11,21 @@
 #define WITH_FLOATEXCEPTIONS
 #define WITH_MEMORYCHECK
 
-// include exception header
-#if (defined(WITH_FLOATEXCEPTIONS) && !defined(NDEBUG) && defined (GTCMT_WIN32))
-#include <float.h>
-#endif // #ifndef WITHOUT_EXCEPTIONS
+#if (!defined(NDEBUG) && defined (GTCMT_WIN32))
+    // include exception header
+    #if defined(WITH_FLOATEXCEPTIONS) 
+        #include <float.h>
+    #endif // #ifndef WITHOUT_EXCEPTIONS
 
-// include memory leak header
-#if (defined(WITH_MEMORYCHECK) && !defined(NDEBUG) && defined (GTCMT_WIN32))
-#define CRTDBG_MAP_ALLOC
-#include <stdlib.h>
-#include <crtdbg.h>
-#else
-#include <stdlib.h>
+    // include memory leak header
+    #if defined(WITH_MEMORYCHECK)
+        #define CRTDBG_MAP_ALLOC
+        #include <stdlib.h>
+        #include <crtdbg.h>
+    #else
+        #include <stdlib.h>
+    #endif
 #endif
-
 std::string cTestDataDir;
 
 /////////////////////////////////////////////////////////////////////////////////

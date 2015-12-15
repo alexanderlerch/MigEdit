@@ -69,7 +69,7 @@ SUITE(MatrixRepresentation)
         {
             float fMax;
             long long int iMax;
-            CMatrix *pMatrixResult = m_Result.getResult (c);
+            CMatrix *pMatrixResult = m_Result.getResultPtr (c);
 
             pMatrixResult->getRow(17, m_ppfBuff[c], pMatrixResult->getNumCols());
             CUtil::findMax(m_ppfBuff[c],fMax, iMax, pMatrixResult->getNumCols());

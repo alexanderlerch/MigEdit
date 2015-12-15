@@ -1,3 +1,4 @@
+#include <iostream>
 #include <string>
 #include <cassert>
 
@@ -177,6 +178,14 @@ CMatrix::MatrixError_t CMatrix::setZero()
 {
     for (int i = 0; i < m_aiMatrixDimensions[kRow]; i++)
         CUtil::setZero(m_ppfMatrix[i], m_aiMatrixDimensions[kCol]);
+
+    return kMatrixNoError;
+}
+
+CMatrix::MatrixError_t CMatrix::setZeroBelowThresh( float fThresh /*= 0*/ )
+{
+    for (int i = 0; i < m_aiMatrixDimensions[kRow]; i++)
+        CUtil::setZeroBelowThresh(m_ppfMatrix[i], m_aiMatrixDimensions[kCol], fThresh);
 
     return kMatrixNoError;
 }
@@ -462,6 +471,16 @@ CMatrix CMatrix::subByElement( const CMatrix &other ) const
     return Result;
 }
 
+float CMatrix::getRowNorm( int iRow, int p /*= 1*/ ) const
+{
+    return getVectorNorm(iRow, -1, p);
+}
+
+float CMatrix::getColNorm( int iCol, int p /*= 1*/ ) const
+{
+    return getVectorNorm(-1, iCol, p);
+}
+
 float CMatrix::getNorm( int p /*= 1*/ ) const
 {
     if (p<=0)
@@ -570,6 +589,19 @@ float CMatrix::getSum( bool bAbs /*= false*/ ) const
     return fResult;
 }
 
+float CMatrix::getMax( bool bAbs /*= false*/ ) const
+{
+    float fResult = -1e38F;
+    for (int i = 0; i < m_aiMatrixDimensions[kRow]; i++)
+    {
+        double dTmp = CUtil::getMax(m_ppfMatrix[i], m_aiMatrixDimensions[kCol], bAbs);
+        if (fResult < dTmp)
+            fResult = static_cast<float>(dTmp);
+    }
+
+    return fResult;
+}
+
 CMatrix CMatrix::mulByOnes( int iNumRows, int iNumCols )
 {
     CMatrix Result;
@@ -649,4 +681,17 @@ CMatrix::MatrixError_t CMatrix::setOnes()
         CUtil::setValue (m_ppfMatrix[i], 1.F, m_aiMatrixDimensions[kCol]);
 
     return kMatrixNoError;
+}
+
+void CMatrix::dbgPrint2StdOut() const
+{
+    std::cout << "Address: " << this << "\tDimensions: " << m_aiMatrixDimensions[kRow] << "x" << m_aiMatrixDimensions[kCol] << std::endl;
+    for (int i = 0; i < m_aiMatrixDimensions[kRow]; i++)
+    {
+        for (int j = 0; j < m_aiMatrixDimensions[kCol]; j++)
+            std::cout << m_ppfMatrix[i][j] << "\t";
+
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
 }

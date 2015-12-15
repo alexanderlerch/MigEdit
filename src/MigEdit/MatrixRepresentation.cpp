@@ -169,7 +169,7 @@ Error_t CMatrixRepresentationResult::setResultRow( int iRow, const float *pfValu
         return kNoError;
 }
 
-Error_t CMatrixRepresentationResult::getResultCol( int iCol, float *pfValues, int iNumValues, int iChannelIdx /*= 0*/ ) const
+Error_t CMatrixRepresentationResult::getCol( int iCol, float *pfValues, int iNumValues, int iChannelIdx /*= 0*/ ) const
 {
     CMatrix::MatrixError_t rErr;
     if (!m_bIsInitialized)
@@ -187,7 +187,7 @@ Error_t CMatrixRepresentationResult::getResultCol( int iCol, float *pfValues, in
 
 }
 
-Error_t CMatrixRepresentationResult::getResultRow( int iRow, float *pfValues, int iNumValues, int iChannelIdx /*= 0*/ ) const
+Error_t CMatrixRepresentationResult::getRow( int iRow, float *pfValues, int iNumValues, int iChannelIdx /*= 0*/ ) const
 {
     CMatrix::MatrixError_t rErr;
     if (!m_bIsInitialized)
@@ -205,7 +205,7 @@ Error_t CMatrixRepresentationResult::getResultRow( int iRow, float *pfValues, in
 
 }
 
-CMatrix* CMatrixRepresentationResult::getResult( int iChannelIdx /*= 0*/ )
+CMatrix* CMatrixRepresentationResult::getResultPtr( int iChannelIdx /*= 0*/ )
 {
     if (iChannelIdx < 0 || iChannelIdx >= m_iNumChannels || !m_bIsInitialized)
         return 0;

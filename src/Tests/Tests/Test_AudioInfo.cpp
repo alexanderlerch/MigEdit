@@ -36,7 +36,7 @@ SUITE(AudioInfo)
         float *m_pfBuff2;
 
         static const int m_iAudioInfoLength = 16384;
-        const float m_fSampleRate;
+        float m_fSampleRate;
 
         CAudioInfo *m_pCAudioInfoInstance;
     };

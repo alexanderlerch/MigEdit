@@ -95,7 +95,7 @@ Error_t CPreproc::process( float **ppfInputBuffer, float **ppfOutputBuffer, int 
     return kNoError;
 }
 
-Error_t CPreproc::setStepActive( PreprocSteps_t eStep, bool bIsEnabled )
+Error_t CPreproc::setStepActive( PreprocSteps_t eStep, bool bIsEnabled /*= true*/ )
 {
     m_abIsStepActive[eStep] = bIsEnabled;
 

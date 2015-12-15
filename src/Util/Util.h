@@ -47,13 +47,23 @@ public:
     }
 
     template<typename T>
-    static void setZero (T *pInput, int iLength)
+    static void setZero (T *pSrcDest, int iLength)
     {
         assert (iLength >= 0);
-        assert (pInput);
+        assert (pSrcDest);
 
         if (iLength > 0)
-            memset (pInput, 0, sizeof(T)*iLength);
+            memset (pSrcDest, 0, sizeof(T)*iLength);
+    }
+    template<typename T>
+    static void setZeroBelowThresh (T *pSrcDest, int iLength, T Thresh)
+    {
+        assert (iLength >= 0);
+        assert (pSrcDest);
+
+        for (int i = 0; i < iLength; i++)
+            if (pSrcDest[i] < Thresh)
+                pSrcDest[i] = 0;
     }
     template<typename T>
     static void copyBuff(T *pDest, const T *pSource, int iLength)
