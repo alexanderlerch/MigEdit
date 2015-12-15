@@ -13,7 +13,7 @@ const float  CNmf::m_kMinOffset = 1e-18F;
 
 CNmf::CNmf () :
     m_phfErr(0),
-    m_phCConfigAndResults(0)
+    m_phCNmfConfig(0)
 {
     // this never hurts
     this->reset ();
@@ -24,11 +24,10 @@ CNmf::~CNmf ()
     this->reset ();
 }
 
-Error_t CNmf::init( CNmfSharedData &NmfSharedData )
+Error_t CNmf::init( CNmfParametrization &NmfSharedData )
 {
     // set pointers
-    m_phfErr                = NmfSharedData.getErrorPtr();
-    m_phCConfigAndResults   = &NmfSharedData;
+    m_phCNmfConfig   = &NmfSharedData;
 
     return kNoError;
 }
@@ -37,12 +36,12 @@ Error_t CNmf::reset ()
 {
     // reset buffers and variables to default values
     m_phfErr                = 0;
-    m_phCConfigAndResults   = 0;
+    m_phCNmfConfig   = 0;
 
     return kNoError;
 }
 
-Error_t CNmf::process( const CMatrix *pCInput )
+Error_t CNmf::process( const CMatrix *pCInput, CNmfResult& NmfResult )
 {
     if (!pCInput)
         return kFunctionInvalidArgsError;
@@ -52,56 +51,28 @@ Error_t CNmf::process( const CMatrix *pCInput )
     int aiRank[kNumSplits]          = {0,0};
     float afWeight[kNumSplits]      = {1.F,1.F};
     float afSparsity[kNumSplits]    = {0,0};
-    int iMaxIter                    = m_phCConfigAndResults->getMaxIterations();
+    int iMaxIter                    = m_phCNmfConfig->getMaxIterations();
+
+
+    NmfResult.init(*m_phCNmfConfig, pCInput->getNumCols());
+    m_phfErr                        = NmfResult.getErrorPtr();
 
     for (int i = 0; i < kNumMatrices; i++)
         for (int j = 0; j < kNumSplits; j++)
-            aaCMatrix[i][j]  = m_phCConfigAndResults->getMatrixPtr((Matrices_t)i, (MatrixSplit_t)j);
+            aaCMatrix[i][j]  = NmfResult.getMatrixPtr((Matrices_t)i, (MatrixSplit_t)j);
 
     for (int j = 0; j < kNumSplits; j++)
     {
-        afSparsity[j]   = m_phCConfigAndResults->getSparsityLambda((MatrixSplit_t)j);
+        afSparsity[j]   = m_phCNmfConfig->getSparsityLambda((MatrixSplit_t)j);
         
-        aiRank[j]       = m_phCConfigAndResults->getRank((MatrixSplit_t)j);
-        if (aiRank[j])
-        {
-            if (aaCMatrix[kDict][j])
-            {
-                if (pCInput->getNumRows() != aaCMatrix[kDict][j]->getNumRows())
-                {
-                    aaCMatrix[kDict][j]->init(m_phCConfigAndResults->getTemplateLength(), aiRank[j]);
-                    aaCMatrix[kDict][j]->setRand();
-                }
-            }
-            else
-            {
-                aaCMatrix[kDict][j]->init(m_phCConfigAndResults->getTemplateLength(), aiRank[j]);
-                aaCMatrix[kDict][j]->setRand();
-            }
-
-            // normalization of template matrices
-            aaCMatrix[kDict][j]->normalize_I(CMatrix::kPerCol);
-
-            if (aaCMatrix[kAct][j])
-            {
-                if (pCInput->getNumCols() != aaCMatrix[kAct][j]->getNumCols())
-                {
-                    aaCMatrix[kAct][j]->init(aaCMatrix[kDict][j]->getNumCols(), pCInput->getNumCols());
-                    aaCMatrix[kAct][j]->setRand();
-                }
-            }
-            else
-            {
-                aaCMatrix[kAct][j]->init(aaCMatrix[kDict][j]->getNumCols(), pCInput->getNumCols());
-                aaCMatrix[kAct][j]->setRand();
-            }
-        }
+        aiRank[j]       = m_phCNmfConfig->getRank((MatrixSplit_t)j);
     }
-    if (aiRank[kSplit1] <= 0 && aiRank[kSplit2] <= 0)
-        return kFunctionInvalidArgsError;
+    
     if ((!aaCMatrix[kDict][kSplit2] && !aaCMatrix[kDict][kSplit1])  || (!aaCMatrix[kAct][kSplit2] && !aaCMatrix[kAct][kSplit1]))
         return kFunctionInvalidArgsError;
 
+    if (aiRank[kSplit1] <= 0 && aiRank[kSplit2] <= 0)
+        return kFunctionInvalidArgsError;
     if (aiRank[kSplit1]*aiRank[kSplit2] != 0)
     {
         if (aiRank[kSplit1] > aiRank[kSplit2])
@@ -132,27 +103,34 @@ Error_t CNmf::process( const CMatrix *pCInput )
         if (aiRank[kSplit2] > 0)
         {
             // update rules
-            // WD = WD .* ((X./approx)*(alpha * HD)')./(rep*(alpha * HD)');
-            if (m_phCConfigAndResults->getIsUpdated(kDict, kSplit2))            
-                aaCMatrix[kDict][kSplit2]->mulByElement_I((CXHat * aaCMatrix[kAct][kSplit2]->transpose() * afWeight[kSplit2]).divByElement((aaCMatrix[kAct][kSplit2]->mulByOnes(pCInput->getNumCols(),pCInput->getNumRows()) * afWeight[kSplit2]).transpose()));
             // HD = HD .* ((alpha * WD)'* (X./approx))./((alpha * WD)'*rep + sparsity);
-            if (m_phCConfigAndResults->getIsUpdated(kAct, kSplit2))            
+            if (m_phCNmfConfig->getIsUpdated(kAct, kSplit2))            
                 aaCMatrix[kAct][kSplit2]->mulByElement_I((aaCMatrix[kDict][kSplit2]->transpose() * CXHat * afWeight[kSplit2]).divByElement(aaCMatrix[kDict][kSplit2]->transpose().mulByOnes(pCInput->getNumRows(),pCInput->getNumCols())*afWeight[kSplit2] + afSparsity[kSplit2]));
 
-            aaCMatrix[kDict][kSplit2]->normalize_I(CMatrix::kPerCol);
+            // WD = WD .* ((X./approx)*(alpha * HD)')./(rep*(alpha * HD)');
+            if (m_phCNmfConfig->getIsUpdated(kDict, kSplit2))            
+            {
+                aaCMatrix[kDict][kSplit2]->mulByElement_I((CXHat * aaCMatrix[kAct][kSplit2]->transpose() * afWeight[kSplit2]).divByElement((aaCMatrix[kAct][kSplit2]->mulByOnes(pCInput->getNumCols(),pCInput->getNumRows()) * afWeight[kSplit2]).transpose()));
+                //aaCMatrix[kDict][kSplit2]->setZeroBelowThresh(m_kMinOffset);
+                // normalization
+                aaCMatrix[kDict][kSplit2]->normalize_I(CMatrix::kPerCol);
+            }
         }
         if (aiRank[kSplit1] > 0)
         {
             // update rules
-            // WH = WH .* ((X./approx)*(beta * HH)')./(rep*(beta * HH)');
-            if (m_phCConfigAndResults->getIsUpdated(kDict, kSplit1))            
-                aaCMatrix[kDict][kSplit1]->mulByElement_I((CXHat * aaCMatrix[kAct][kSplit1]->transpose() * afWeight[kSplit1]).divByElement((aaCMatrix[kAct][kSplit1]->mulByOnes(pCInput->getNumCols(),pCInput->getNumRows()) * afWeight[kSplit1]).transpose()));
             // HH = HH .* ((beta * WH)'* (X./approx))./((beta * WH)'*rep);
-            if (m_phCConfigAndResults->getIsUpdated(kAct, kSplit2))            
+            if (m_phCNmfConfig->getIsUpdated(kAct, kSplit2))            
                 aaCMatrix[kAct][kSplit1]->mulByElement_I((aaCMatrix[kDict][kSplit1]->transpose() * CXHat * afWeight[kSplit1]).divByElement(aaCMatrix[kDict][kSplit1]->transpose().mulByOnes(pCInput->getNumRows(),pCInput->getNumCols())*afWeight[kSplit1] + afSparsity[kSplit1]));
 
-            // normalization
-            aaCMatrix[kDict][kSplit1]->normalize_I(CMatrix::kPerCol);
+            if (m_phCNmfConfig->getIsUpdated(kDict, kSplit1))            
+            {
+                // WH = WH .* ((X./approx)*(beta * HH)')./(rep*(beta * HH)');
+                aaCMatrix[kDict][kSplit1]->mulByElement_I((CXHat * aaCMatrix[kAct][kSplit1]->transpose() * afWeight[kSplit1]).divByElement((aaCMatrix[kAct][kSplit1]->mulByOnes(pCInput->getNumCols(),pCInput->getNumRows()) * afWeight[kSplit1]).transpose()));
+                //aaCMatrix[kDict][kSplit1]->setZeroBelowThresh(m_kMinOffset);
+                // normalization
+                aaCMatrix[kDict][kSplit1]->normalize_I(CMatrix::kPerCol);
+            }
         }
         if (aiRank[kSplit1] > 0 && aiRank[kSplit2] > 0)
         {
@@ -179,7 +157,13 @@ Error_t CNmf::process( const CMatrix *pCInput )
         // termination criteria
         if (isRelativeErrorBelowThresh(k))
         {
-            m_phCConfigAndResults->m_iNumIterations    = k;
+            for (int i = 0; i < kNumSplits; i++)
+            {
+                if (aiRank[i] > 0)
+                    aaCMatrix[kAct][kSplit1]->setZeroBelowThresh(m_kMinOffset*aaCMatrix[kAct][kSplit1]->getMax());
+            }
+            
+            NmfResult.m_iNumIterations    = k;
             break;
         }
     }
@@ -191,7 +175,7 @@ bool CNmf::isRelativeErrorBelowThresh( int iCurrIteration ) const
 {
     if (iCurrIteration < 1)
         return false;
-    return (abs(m_phfErr[iCurrIteration] - m_phfErr[iCurrIteration-1])/(m_phfErr[0] - m_phfErr[iCurrIteration] + m_kMinOffset) < m_phCConfigAndResults->getMinError());
+    return (abs(m_phfErr[iCurrIteration] - m_phfErr[iCurrIteration-1])/(m_phfErr[0] - m_phfErr[iCurrIteration] + m_kMinOffset) < m_phCNmfConfig->getMinError());
 }
 
 float CNmf::calcKlDivergence( const CMatrix &Mat1, const CMatrix &Mat2 ) const

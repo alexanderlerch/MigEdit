@@ -7,10 +7,10 @@
 class CNmf : public CNmfIf
 {
 public:
-    Error_t init (CNmfSharedData &NmfSharedData) override;
+    Error_t init (CNmfParametrization &NmfSharedData) override;
     Error_t reset () override;
 
-    Error_t process (const CMatrix *pCInput) override;
+    Error_t process (const CMatrix *pCInput, CNmfResult& NmfResult) override;
 
     CNmf ();
     virtual ~CNmf ();
@@ -22,7 +22,7 @@ private:
     static const float m_kMinOffset;
 
     float *m_phfErr;
-    CNmfSharedData *m_phCConfigAndResults;
+    CNmfParametrization *m_phCNmfConfig;
 };
 
 #endif // #if !defined(__Nmf_hdr__)

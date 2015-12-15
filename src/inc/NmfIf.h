@@ -20,18 +20,18 @@ enum Matrices_t
 
 class CMatrix;
 
-class CNmfSharedData
+class CNmfParametrization
 {
-    friend class CNmf;
+    friend class CNmfResult;
 public:
-    CNmfSharedData(int iTemplateLength, int iRankSplit1, int iRankSplit2 = 0);
-    virtual ~CNmfSharedData();
+    CNmfParametrization();
+    virtual ~CNmfParametrization();
 
-    Error_t setMatrix(Matrices_t eMatrix, MatrixSplit_t eSplit, const CMatrix *pCMatrix);
+    Error_t init(int iTemplateLength, int iRankSplit1, int iRankSplit2 = 0);
+    Error_t setMatrixInit(Matrices_t eMatrix, MatrixSplit_t eSplit, const CMatrix *pCMatrix);
     Error_t setIsUpdated(Matrices_t eMatrix, MatrixSplit_t eSplit, bool bIsUpdate = true);
     Error_t setTerminationCriteria (int iMaxIterations = 300, float fMinError = 1e-4F);
     Error_t setSparsityLambda(MatrixSplit_t eSplit, float fValue = 0);
-    Error_t finalizeSettings();
     Error_t reset ();
 
     // get settings
@@ -42,25 +42,12 @@ public:
     int     getRank(MatrixSplit_t eSplit) const;
     int     getTemplateLength() const;
 
-    bool    isInitialized() const {return m_bIsInitialized;}
- 
-    // get result
-    int     getResultNumIterations() const;
-    CMatrix getResultMatrix(Matrices_t eMatrix, MatrixSplit_t eSplit) const;
-    float   getResultError() const;
-
 protected:
-    CMatrix* getMatrixPtr(Matrices_t eMatrix, MatrixSplit_t eSplit);
-    float*  getErrorPtr();
+    const CMatrix* getMatrixPtr(Matrices_t eMatrix, MatrixSplit_t eSplit);
 
-    int m_iNumIterations;
 private:
-    CNmfSharedData (const CNmfSharedData &/*other*/) {};
+    CNmfParametrization (const CNmfParametrization &/*other*/) {};
     CMatrix *m_aapCMatrices[kNumMatrices][kNumSplits];
-
-    float *m_pfError;
-
-    bool m_bIsInitialized;
 
     int m_iTemplateLength;
     bool m_aabIsUpdated[kNumMatrices][kNumSplits];
@@ -69,6 +56,40 @@ private:
     int m_iMaxIter;
     int m_aiRank[kNumSplits];
 };
+
+class CNmfResult
+{
+    friend class CNmf;
+public:
+    CNmfResult();
+    virtual ~CNmfResult();
+
+
+    // get result
+    int     getNumIterations() const;
+    CMatrix getMatrix(Matrices_t eMatrix, MatrixSplit_t eSplit) const;
+    float   getError() const;
+
+protected:
+
+    bool    isInitialized() const {return m_bIsInitialized;}
+    Error_t init(CNmfParametrization& ParamsAndInit, int iNumObservations);
+    Error_t reset();
+    CMatrix* getMatrixPtr(Matrices_t eMatrix, MatrixSplit_t eSplit);
+    float*  getErrorPtr();
+
+    int m_iNumIterations;
+private:
+    CNmfResult (const CNmfParametrization &/*other*/) {};
+    CMatrix *m_aapCMatrices[kNumMatrices][kNumSplits];
+
+    float *m_pfError;
+    int m_iMaxIter;
+
+    bool m_bIsInitialized;
+};
+
+
 class CNmfIf
 {
 public:
@@ -89,10 +110,10 @@ public:
     static Error_t create (CNmfIf*& pCInstance);
     static Error_t destroy (CNmfIf*& pCInstance);
     
-    virtual Error_t init (CNmfSharedData &NmfSharedData) = 0;
+    virtual Error_t init (CNmfParametrization &NmfInit) = 0;
     virtual Error_t reset () = 0;
     
-    virtual Error_t process (const CMatrix *pCInput) = 0;
+    virtual Error_t process (const CMatrix *pCInput, CNmfResult& NmfResult) = 0;
 
 protected:
     CNmfIf () {};

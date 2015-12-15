@@ -19,32 +19,25 @@ SUITE(Nmf)
         NmfData() 
         {
             CNmfIf::create(m_pCNmf);
-            m_pCInitAndResult   = new CNmfSharedData(8,3);
-
-            m_pCNmf->init(*m_pCInitAndResult);
         }
 
         ~NmfData() 
         {
             m_pCNmf->reset();
             CNmfIf::destroy(m_pCNmf);
-            m_pCInitAndResult->reset();
-            delete m_pCInitAndResult;
+            m_CInit.reset();
         }
 
         CNmfIf *m_pCNmf;
-        CNmfSharedData *m_pCInitAndResult;
+        CNmfParametrization m_CInit;
+        CNmfResult m_CResult;
     };
 
-    TEST_FIXTURE(NmfData, Basic)
+    TEST_FIXTURE(NmfData, BasicNmf)
     {
+        CMatrix Result[kNumMatrices][kNumSplits];
+        int iNmfRank = 3;
         CMatrix myMatrix = CMatrix(8, 13);
-        CMatrix myFixed  = CMatrix(8,3);
-        CMatrix myFixedAct = CMatrix(3,13);
-        myFixed.setOnes();
-        myFixedAct.setOnes();
-        CMatrix myNonFixed = myFixed;
-        CMatrix myNonFixedAct = myFixedAct;
 
         for (int j = 0; j < 4; j++)
             myMatrix.setElement(2, j, 1.F);
@@ -53,12 +46,27 @@ SUITE(Nmf)
         for (int j = 9; j < 13; j++)
             myMatrix.setElement(7, j, 1.F);
 
-        m_pCInitAndResult->setMatrix(kDict,kSplit1, &myNonFixed);
-        m_pCInitAndResult->setMatrix(kAct,kSplit1, &myNonFixedAct);
-        m_pCInitAndResult->setMatrix(kDict,kSplit2, &myFixed);
-        m_pCInitAndResult->setMatrix(kAct,kSplit2, &myFixedAct);
-        m_pCInitAndResult->finalizeSettings();
-        m_pCNmf->process (&myMatrix);
+        m_CInit.init(8,iNmfRank);
+
+        m_pCNmf->init(m_CInit);
+
+        m_pCNmf->process (&myMatrix, m_CResult);
+        //for (int i = 0; i < kNumMatrices; i++)
+        //{
+        //    for (int j = 0; j < kNumSplits; j++)
+        //    {
+        //        Result[i][j] = m_CResult.getMatrix((Matrices_t)i,(MatrixSplit_t)j);
+        //        Result[i][j].dbgPrint2StdOut();
+        //    }
+        //}
+        
+        CHECK_CLOSE(3,Result[kDict][kSplit1].getSum(), 1e-4F);
+        for (int j = 0; j < 3; j++)
+            CHECK_CLOSE(1,Result[kDict][kSplit1].getColNorm(j,1),1e-4F);
+        CHECK_CLOSE(13,Result[kAct][kSplit1].getSum(), 1e-4F);
+        for (int j = 0; j < 13; j++)
+            CHECK_CLOSE(1,Result[kAct][kSplit1].getColNorm(j,1),1e-4F);
+
     }
 }
 

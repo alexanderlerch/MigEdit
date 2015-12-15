@@ -80,45 +80,26 @@ Error_t CNmfIf::destroy (CNmfIf*& pCMigEdit)
 
 //////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////
-CNmfSharedData::CNmfSharedData( int iTemplateLength, int iRankSplit1, int iRankSplit2/*=0*/ ) :
-    m_iTemplateLength(iTemplateLength),
+CNmfParametrization::CNmfParametrization(  ) :
+    m_iTemplateLength(0),
     m_fMinError(1e-4F),
-    m_iMaxIter(300),
-    m_iNumIterations(0),
-    m_pfError(0),
-    m_bIsInitialized(false)
+    m_iMaxIter(300)
 {
-    CUtil::setZero(m_afSparsity, kNumSplits);
-    
-    for (int i = 0; i < kNumMatrices; i++)
-    {
-        CUtil::setZero(m_aapCMatrices[i], kNumSplits);
-        for (int j = 0; j < kNumSplits; j++)
-            m_aabIsUpdated[i][j]    = true;
-    }
-    m_aiRank[kSplit1]   = iRankSplit1;
-    m_aiRank[kSplit2]   = iRankSplit2;
-
-    m_pfError   = new float[m_iMaxIter];
-    CUtil::setZero(m_pfError, m_iMaxIter);
+    reset();
 }
 
-CNmfSharedData::~CNmfSharedData()
+CNmfParametrization::~CNmfParametrization()
 {
     for (int i = 0; i < kNumMatrices; i++)
     {
         for (int j = 0; j < kNumSplits; j++)
         {
-            delete m_aapCMatrices[i][j];
             m_aapCMatrices[i][j]    = 0;
         }
     }
-    if (m_pfError)
-        delete [] m_pfError;
-    m_pfError   = 0;
 }
 
-Error_t CNmfSharedData::setMatrix( Matrices_t eMatrix, MatrixSplit_t eSplit, const CMatrix *pCMatrix )
+Error_t CNmfParametrization::setMatrixInit( Matrices_t eMatrix, MatrixSplit_t eSplit, const CMatrix *pCMatrix )
 {
     if (!pCMatrix)
         return kFunctionInvalidArgsError;
@@ -139,14 +120,14 @@ Error_t CNmfSharedData::setMatrix( Matrices_t eMatrix, MatrixSplit_t eSplit, con
     return kNoError;
 }
 
-Error_t CNmfSharedData::setIsUpdated( Matrices_t eMatrix, MatrixSplit_t eSplit, bool bIsUpdate /*= true*/ )
+Error_t CNmfParametrization::setIsUpdated( Matrices_t eMatrix, MatrixSplit_t eSplit, bool bIsUpdate /*= true*/ )
 {
     m_aabIsUpdated[eMatrix][eSplit] = bIsUpdate;
 
     return kNoError;
 }
 
-Error_t CNmfSharedData::setTerminationCriteria( int iMaxIterations /*= 300*/, float fMinError /*= 1e-4F*/ )
+Error_t CNmfParametrization::setTerminationCriteria( int iMaxIterations /*= 300*/, float fMinError /*= 1e-4F*/ )
 {
     if (iMaxIterations <= 0 || fMinError <= 0)
         return kFunctionInvalidArgsError;
@@ -157,7 +138,7 @@ Error_t CNmfSharedData::setTerminationCriteria( int iMaxIterations /*= 300*/, fl
     return kNoError;
 }
 
-Error_t CNmfSharedData::setSparsityLambda( MatrixSplit_t eSplit, float fValue /*= 0*/ )
+Error_t CNmfParametrization::setSparsityLambda( MatrixSplit_t eSplit, float fValue /*= 0*/ )
 {
     if (fValue <= 0)
         return kFunctionInvalidArgsError;
@@ -167,118 +148,93 @@ Error_t CNmfSharedData::setSparsityLambda( MatrixSplit_t eSplit, float fValue /*
     return kNoError;
 }
 
-Error_t CNmfSharedData::finalizeSettings()
+
+Error_t CNmfParametrization::reset()
 {
-    assert(m_aiRank[kSplit1] >= 0 && m_aiRank[kSplit2] >= 0);
-
-    for (int k = 0; k < kNumSplits; k++)
-    {
-        if (m_aiRank[k] == 0)
-        {
-            for (int i = 0; i < kNumMatrices; i++)
-            {
-                if (m_aapCMatrices[i][k])
-                    m_aapCMatrices[i][k]->reset();
-                m_aabIsUpdated[i][k]    = false;
-            }
-        }
-        else
-        {
-            if (m_aapCMatrices[kDict][k] != 0)
-                if (m_aapCMatrices[kDict][k]->getNumRows() == m_iTemplateLength && m_aapCMatrices[kDict][k]->getNumCols() == m_aiRank[k])
-                    continue;
-            m_aapCMatrices[kDict][k]->init(m_iTemplateLength, m_aiRank[k]);
-            m_aapCMatrices[kDict][k]->setRand();
-        }
-    }
-
-    if (m_pfError)
-        delete [] m_pfError;
-    m_pfError   = new float[m_iMaxIter];
-    CUtil::setZero(m_pfError, m_iMaxIter);
-
-    m_bIsInitialized    = true;
-
-    return kNoError;
-}
-
-Error_t CNmfSharedData::reset()
-{
-    m_bIsInitialized    = false;
     m_fMinError         = 1e-4F;
     m_iMaxIter          = 300;
-    m_iNumIterations    = 0;
 
     CUtil::setZero(m_afSparsity, kNumSplits);
+    CUtil::setZero(m_aiRank, kNumSplits);
 
     for (int i = 0; i < kNumMatrices; i++)
     {
         for (int j = 0; j < kNumSplits; j++)
         {
-            delete m_aapCMatrices[i][j];
             m_aapCMatrices[i][j]    = 0;
             m_aabIsUpdated[i][j]    = true;
         }
     }
+    m_iTemplateLength   = 0;
 
-    delete [] m_pfError;
-    m_pfError   = 0;
-
-    
     return kNoError;
 }
 
-int CNmfSharedData::getMaxIterations() const
+int CNmfParametrization::getMaxIterations() const
 {
     return m_iMaxIter;
 }
 
-float CNmfSharedData::getMinError() const
+float CNmfParametrization::getMinError() const
 {
     return m_fMinError;
 }
 
-float CNmfSharedData::getSparsityLambda( MatrixSplit_t eSplit ) const
+float CNmfParametrization::getSparsityLambda( MatrixSplit_t eSplit ) const
 {
     return m_afSparsity[eSplit];
 }
 
-bool CNmfSharedData::getIsUpdated( Matrices_t eMatrix, MatrixSplit_t eSplit ) const
+bool CNmfParametrization::getIsUpdated( Matrices_t eMatrix, MatrixSplit_t eSplit ) const
 {
     return m_aabIsUpdated[eMatrix][eSplit];
 }
 
-CMatrix* CNmfSharedData::getMatrixPtr( Matrices_t eMatrix, MatrixSplit_t eSplit )
-{
-    return m_aapCMatrices[eMatrix][eSplit];
-}
-
-CMatrix CNmfSharedData::getResultMatrix( Matrices_t eMatrix, MatrixSplit_t eSplit ) const
-{
-    return *m_aapCMatrices[eMatrix][eSplit];
-}
-
-float* CNmfSharedData::getErrorPtr()
-{
-    return m_pfError;
-}
-
-int CNmfSharedData::getResultNumIterations() const
-{
-    return m_iNumIterations;
-}
-
-int CNmfSharedData::getRank( MatrixSplit_t eSplit ) const
+int CNmfParametrization::getRank( MatrixSplit_t eSplit ) const
 {
     return m_aiRank[eSplit];
 }
 
-int CNmfSharedData::getTemplateLength() const
+int CNmfParametrization::getTemplateLength() const
 {
     return m_iTemplateLength;
 }
 
-float CNmfSharedData::getResultError() const
+const CMatrix* CNmfParametrization::getMatrixPtr( Matrices_t eMatrix, MatrixSplit_t eSplit )
+{
+    return m_aapCMatrices[eMatrix][eSplit];
+}
+
+Error_t CNmfParametrization::init( int iTemplateLength, int iRankSplit1, int iRankSplit2 /*= 0*/ )
+{
+    m_iTemplateLength   = iTemplateLength;
+    m_aiRank[kSplit1]   = iRankSplit1;
+    m_aiRank[kSplit2]   = iRankSplit2;
+
+    return kNoError;
+}
+
+CMatrix* CNmfResult::getMatrixPtr( Matrices_t eMatrix, MatrixSplit_t eSplit )
+{
+    return m_aapCMatrices[eMatrix][eSplit];
+}
+
+CMatrix CNmfResult::getMatrix( Matrices_t eMatrix, MatrixSplit_t eSplit ) const
+{
+    return *m_aapCMatrices[eMatrix][eSplit];
+}
+
+float* CNmfResult::getErrorPtr()
+{
+    return m_pfError;
+}
+
+int CNmfResult::getNumIterations() const
+{
+    return m_iNumIterations;
+}
+
+float CNmfResult::getError() const
 {
     if (!m_pfError) 
         return -1.F;
@@ -286,4 +242,109 @@ float CNmfSharedData::getResultError() const
     assert(m_iNumIterations>=0 && m_iNumIterations < m_iMaxIter);
 
     return m_pfError[m_iNumIterations];
+}
+
+CNmfResult::CNmfResult() :
+    m_iNumIterations(0),
+    m_pfError(0),
+    m_bIsInitialized(false)
+{
+    for (int i = 0; i < kNumMatrices; i++)
+    {
+        for (int j = 0; j < kNumSplits; j++)
+        {
+            m_aapCMatrices[i][j]    = new CMatrix();
+        }
+    }
+    reset ();
+}
+
+CNmfResult::~CNmfResult()
+{
+    reset();
+    
+    for (int i = 0; i < kNumMatrices; i++)
+    {
+        for (int j = 0; j < kNumSplits; j++)
+        {
+            delete m_aapCMatrices[i][j];
+            m_aapCMatrices[i][j]    = 0;
+        }
+    }
+}
+
+Error_t CNmfResult::init( CNmfParametrization& ParamsAndInit, int iNumObservations )
+{
+    reset();
+
+    m_iMaxIter  = ParamsAndInit.getMaxIterations();
+    m_pfError   = new float[m_iMaxIter];
+    CUtil::setZero(m_pfError, m_iMaxIter);
+    
+
+    for (int k = 0; k < kNumSplits; k++)
+    {
+        int iRank = ParamsAndInit.getRank(static_cast<MatrixSplit_t>(k));
+        for (int i = 0; i < kNumMatrices; i++)
+        {
+            if (iRank != 0)
+            {
+                const CMatrix* pCMat = ParamsAndInit.getMatrixPtr(static_cast<Matrices_t>(i), static_cast<MatrixSplit_t>(k));
+                int iNumRows = 0;
+                int iNumCols = 0;
+
+                if (i == kDict)
+                {
+                    iNumRows    = ParamsAndInit.getTemplateLength();
+                    iNumCols    = iRank;
+                }
+                else if (i == kAct)
+                {
+                    iNumRows    = iRank;
+                    iNumCols    = iNumObservations;
+                }
+
+                if (!pCMat)
+                {
+                    m_aapCMatrices[i][k]->reset();
+                    m_aapCMatrices[i][k]->init(iNumRows, iNumCols);
+                    m_aapCMatrices[i][k]->setRand();
+                }
+                else
+                {
+                    if (pCMat->getNumRows() != iNumRows && pCMat->getNumCols() != iNumCols)
+                    {
+                        m_aapCMatrices[i][k]->reset();
+                        m_aapCMatrices[i][k]->init(iNumRows, iNumCols);
+                        m_aapCMatrices[i][k]->setRand();
+                    }
+                    else
+                        m_aapCMatrices[i][k] = new CMatrix(*pCMat);
+                }                
+            }
+        }
+    }
+
+    m_bIsInitialized    = true;
+
+    return kNoError;
+}
+
+Error_t CNmfResult::reset()
+{
+    m_bIsInitialized    = false;
+
+    for (int i = 0; i < kNumMatrices; i++)
+    {
+        for (int j = 0; j < kNumSplits; j++)
+        {
+            m_aapCMatrices[i][j]->reset();
+        }
+    }
+    if (m_pfError)
+        delete [] m_pfError;
+    m_pfError   = 0;
+    m_iMaxIter  = 0;
+
+    return kNoError;
 }
