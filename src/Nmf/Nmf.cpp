@@ -1,5 +1,6 @@
 
 // standard headers
+#include <algorithm>
 
 // project headers
 #include "ErrorDef.h"
@@ -71,8 +72,13 @@ Error_t CNmf::process( const CMatrix *pCInput, CNmfResult& NmfResult )
     if ((!aaCMatrix[kDict][kSplit2] && !aaCMatrix[kDict][kSplit1])  || (!aaCMatrix[kAct][kSplit2] && !aaCMatrix[kAct][kSplit1]))
         return kFunctionInvalidArgsError;
 
+    if ((aaCMatrix[kDict][kSplit1]->getNumRows()+aaCMatrix[kDict][kSplit2]->getNumRows() != pCInput->getNumRows())  || 
+        (std::max(aaCMatrix[kAct][kSplit1]->getNumCols(),aaCMatrix[kAct][kSplit2]->getNumCols()) != pCInput->getNumCols()))
+        return kFunctionInvalidArgsError;
+
     if (aiRank[kSplit1] <= 0 && aiRank[kSplit2] <= 0)
         return kFunctionInvalidArgsError;
+
     if (aiRank[kSplit1]*aiRank[kSplit2] != 0)
     {
         if (aiRank[kSplit1] > aiRank[kSplit2])
@@ -85,14 +91,14 @@ Error_t CNmf::process( const CMatrix *pCInput, CNmfResult& NmfResult )
             afWeight[kSplit1] = (aiRank[kSplit1]  + aiRank[kSplit2]) * 1.F / aiRank[kSplit1]; //alpha
             afWeight[kSplit2] = aiRank[kSplit2] * 1.F/ (aiRank[kSplit1]  + aiRank[kSplit2]); //beta
         }
+        CXHat   = *aaCMatrix[kDict][kSplit1] * *aaCMatrix[kAct][kSplit1] * afWeight[kSplit1] + *aaCMatrix[kDict][kSplit2] * *aaCMatrix[kAct][kSplit2] * afWeight[kSplit2];
     }
-
-    if (aiRank[kSplit1] > 0 && aiRank[kSplit2] > 0)
-        CXHat           = *aaCMatrix[kDict][kSplit1] * *aaCMatrix[kAct][kSplit1] * afWeight[kSplit1] + *aaCMatrix[kDict][kSplit2] * *aaCMatrix[kAct][kSplit2] * afWeight[kSplit2] + m_kMinOffset;
     else if (aiRank[kSplit2] > 0)
-        CXHat           = *aaCMatrix[kDict][kSplit2] * *aaCMatrix[kAct][kSplit2] * afWeight[kSplit2] + m_kMinOffset;
+        CXHat   = *aaCMatrix[kDict][kSplit2] * *aaCMatrix[kAct][kSplit2];
     else if (aiRank[kSplit1] > 0)
-        CXHat           = *aaCMatrix[kDict][kSplit1] * *aaCMatrix[kAct][kSplit1] * afWeight[kSplit1] + m_kMinOffset;
+        CXHat   = *aaCMatrix[kDict][kSplit1] * *aaCMatrix[kAct][kSplit1];
+
+    CXHat.addC_I(m_kMinOffset);
 
     for (int k = 0; k < iMaxIter; k++)
     {
@@ -121,33 +127,33 @@ Error_t CNmf::process( const CMatrix *pCInput, CNmfResult& NmfResult )
             // update rules
             // HH = HH .* ((beta * WH)'* (X./approx))./((beta * WH)'*rep);
             if (m_phCNmfConfig->getIsUpdated(kAct, kSplit2))            
-                aaCMatrix[kAct][kSplit1]->mulByElement_I((aaCMatrix[kDict][kSplit1]->transpose() * CXHat * afWeight[kSplit1]).divByElement(aaCMatrix[kDict][kSplit1]->transpose().mulByOnes(pCInput->getNumRows(),pCInput->getNumCols())*afWeight[kSplit1] + afSparsity[kSplit1]));
+                //aaCMatrix[kAct][kSplit1]->mulByElement_I((aaCMatrix[kDict][kSplit1]->transpose() * CXHat * afWeight[kSplit1]).divByElement(aaCMatrix[kDict][kSplit1]->transpose().mulByOnes(pCInput->getNumRows(),pCInput->getNumCols())*afWeight[kSplit1] + afSparsity[kSplit1]));
+                aaCMatrix[kAct][kSplit1]->mulByElement_I(
+                (aaCMatrix[kDict][kSplit1]->transpose().mulC_I(afWeight[kSplit1]) * CXHat ).divByElement_I(
+                aaCMatrix[kDict][kSplit1]->transpose().mulC_I(afWeight[kSplit1]).mulByOnes(pCInput->getNumRows(),pCInput->getNumCols()).addC_I(afSparsity[kSplit1])));
 
             if (m_phCNmfConfig->getIsUpdated(kDict, kSplit1))            
             {
                 // WH = WH .* ((X./approx)*(beta * HH)')./(rep*(beta * HH)');
-                aaCMatrix[kDict][kSplit1]->mulByElement_I((CXHat * aaCMatrix[kAct][kSplit1]->transpose() * afWeight[kSplit1]).divByElement((aaCMatrix[kAct][kSplit1]->mulByOnes(pCInput->getNumCols(),pCInput->getNumRows()) * afWeight[kSplit1]).transpose()));
-                //aaCMatrix[kDict][kSplit1]->setZeroBelowThresh(m_kMinOffset);
+                aaCMatrix[kDict][kSplit1]->mulByElement_I(
+                    (CXHat * aaCMatrix[kAct][kSplit1]->transpose() * afWeight[kSplit1]).divByElement(
+                    (aaCMatrix[kAct][kSplit1]->mulByOnes(pCInput->getNumCols(),pCInput->getNumRows()) * afWeight[kSplit1]).transpose()));
+
                 // normalization
+                //aaCMatrix[kDict][kSplit1]->setZeroBelowThresh(m_kMinOffset);
                 aaCMatrix[kDict][kSplit1]->normalize_I(CMatrix::kPerCol);
             }
         }
         if (aiRank[kSplit1] > 0 && aiRank[kSplit2] > 0)
-        {
-            CXHat           = *aaCMatrix[kDict][kSplit1] * *aaCMatrix[kAct][kSplit1] * afWeight[kSplit1] + *aaCMatrix[kDict][kSplit2] * *aaCMatrix[kAct][kSplit2] * afWeight[kSplit2] + m_kMinOffset;
-            fSparsityCost   = afSparsity[kSplit2] * aaCMatrix[kAct][kSplit2]->getSum() + afSparsity[kSplit1] * aaCMatrix[kAct][kSplit1]->getSum();
-        }
+            CXHat           = *aaCMatrix[kDict][kSplit1] * *aaCMatrix[kAct][kSplit1] * afWeight[kSplit1] + *aaCMatrix[kDict][kSplit2] * *aaCMatrix[kAct][kSplit2] * afWeight[kSplit2];
         else if (aiRank[kSplit2] > 0)
-        {
-            CXHat           = *aaCMatrix[kDict][kSplit2] * *aaCMatrix[kAct][kSplit2] * afWeight[kSplit2] + m_kMinOffset;
-            fSparsityCost   = afSparsity[kSplit2] * aaCMatrix[kAct][kSplit2]->getSum();
-        }
+            CXHat           = *aaCMatrix[kDict][kSplit2] * *aaCMatrix[kAct][kSplit2];
         else if (aiRank[kSplit1] > 0)
-        {
-            CXHat           = *aaCMatrix[kDict][kSplit1] * *aaCMatrix[kAct][kSplit1] * afWeight[kSplit1] + m_kMinOffset;
-            fSparsityCost   = afSparsity[kSplit1] * aaCMatrix[kAct][kSplit1]->getSum();
-        }
+            CXHat           = *aaCMatrix[kDict][kSplit1] * *aaCMatrix[kAct][kSplit1];
+        CXHat.addC_I(m_kMinOffset);
 
+        for (int j = 0; j < kNumSplits; j++)
+            fSparsityCost  += afSparsity[j] * aaCMatrix[kAct][j]->getNorm();
 
         if (fSparsityCost > 0)
             m_phfErr[k]  = calcKlDivergence(*pCInput, CXHat + fSparsityCost);
@@ -163,7 +169,7 @@ Error_t CNmf::process( const CMatrix *pCInput, CNmfResult& NmfResult )
                     aaCMatrix[kAct][kSplit1]->setZeroBelowThresh(m_kMinOffset*aaCMatrix[kAct][kSplit1]->getMax());
             }
             
-            NmfResult.m_iNumIterations    = k;
+            NmfResult.m_iNumIterations    = k+1;
             break;
         }
     }

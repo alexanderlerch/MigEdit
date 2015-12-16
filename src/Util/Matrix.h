@@ -65,9 +65,11 @@ public:
     MatrixError_t   mulByOnes_I(int iNumRows, int iNumCols);
     CMatrix         mulByOnes(int iNumRows, int iNumCols);
 
-    MatrixError_t   mulByElement_I(const CMatrix &other);
-    MatrixError_t   divByElement_I(const CMatrix &other);
-    MatrixError_t   addByElement_I(const CMatrix &other);
+    CMatrix& mulByElement_I(const CMatrix &other);
+    CMatrix&        mulC_I(float fC);
+    CMatrix& divByElement_I(const CMatrix &other);
+    CMatrix& addByElement_I(const CMatrix &other);
+    CMatrix& addC_I( float fC );
     MatrixError_t   subByElement_I(const CMatrix &other);
     CMatrix         mulByElement(const CMatrix &other) const;
     CMatrix         divByElement(const CMatrix &other) const;
@@ -77,7 +79,7 @@ public:
     CMatrix& operator = (const CMatrix &other);
     CMatrix operator + (const CMatrix &other) const;
     CMatrix operator - (const CMatrix &other) const;
-    CMatrix operator * (const CMatrix &other) const;
+    CMatrix operator * (CMatrix &other) const;
     bool    operator== (const CMatrix &other) const;
     CMatrix operator + (const float fValue) const;
     CMatrix operator - (const float fValue) const;
@@ -91,6 +93,7 @@ public:
     void dbgPrint2StdOut() const;
 
 private:
+    float** getMatrix();
     const float*    getRow (int iRow) const;
     float getVectorNorm (int iRow = -1, int iCol = -1, int p = 1) const;
     bool isIndexValid( int iRow, int iCol ) const

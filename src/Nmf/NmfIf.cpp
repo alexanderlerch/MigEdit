@@ -241,7 +241,7 @@ float CNmfResult::getError() const
 
     assert(m_iNumIterations>=0 && m_iNumIterations < m_iMaxIter);
 
-    return m_pfError[m_iNumIterations];
+    return m_pfError[m_iNumIterations-1];
 }
 
 CNmfResult::CNmfResult() :
@@ -321,6 +321,8 @@ Error_t CNmfResult::init( CNmfParametrization& ParamsAndInit, int iNumObservatio
                     else
                         m_aapCMatrices[i][k] = new CMatrix(*pCMat);
                 }                
+                if (i == kDict)
+                    m_aapCMatrices[i][k]->normalize_I(CMatrix::kPerCol);
             }
         }
     }

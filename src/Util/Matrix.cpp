@@ -256,23 +256,27 @@ CMatrix CMatrix::operator-(const CMatrix &other) const
     return TmpMatrix;
 }
 
-CMatrix CMatrix::operator*(const CMatrix &other) const
+CMatrix CMatrix::operator*(CMatrix &other) const
 { 
     assert(m_aiMatrixDimensions[kCol] == other.getNumRows());
     CMatrix TmpMatrix;
 
     if (m_aiMatrixDimensions[kCol] == other.getNumRows())
     { 
+        int iNumResCols     = other.getNumCols ();
+        float** ppfOther    = other.getMatrix();
         TmpMatrix.init(m_aiMatrixDimensions[kRow], other.getNumCols());
+        float** ppfTmp      = TmpMatrix.getMatrix();
 
         for (int i = 0; i < m_aiMatrixDimensions[kRow]; i++)
         {
-            for (int j = 0; j < other.getNumCols (); j++)
+            for (int j = 0; j < iNumResCols; j++)
             {
                 float fResult = 0;
                 for (int k = 0; k < m_aiMatrixDimensions[kCol]; k++)
-                    fResult     += m_ppfMatrix[i][k] * other.getElement(k,j);
-                TmpMatrix.setElement(i, j, fResult);
+                    fResult     += m_ppfMatrix[i][k] * ppfOther[k][j];
+                //TmpMatrix.setElement(i, j, fResult);
+                ppfTmp[i][j]    = fResult;
             }
         }
     }
@@ -394,38 +398,46 @@ void CMatrix::assign( const CMatrix &other )
         other.getRow(i, m_ppfMatrix[i], m_aiMatrixDimensions[kCol]);
 }
 
-CMatrix::MatrixError_t CMatrix::mulByElement_I( const CMatrix &other )
+CMatrix& CMatrix::mulByElement_I( const CMatrix &other )
 {
-    if (m_aiMatrixDimensions[kRow] != other.getNumRows() || m_aiMatrixDimensions[kCol] != other.getNumCols())
-        return kMatrixIllegalFunctionParam;
+    //if (m_aiMatrixDimensions[kRow] != other.getNumRows() || m_aiMatrixDimensions[kCol] != other.getNumCols())
+    //    return kMatrixIllegalFunctionParam;
 
     for (int i = 0; i < m_aiMatrixDimensions[kRow]; i++)
         CUtil::mulBuff(m_ppfMatrix[i], other.getRow(i), m_aiMatrixDimensions[kCol]);
 
-    return kMatrixNoError;
+    return *this;
+}
+
+CMatrix& CMatrix::mulC_I( float fC )
+{
+    for (int i = 0; i < m_aiMatrixDimensions[kRow]; i++)
+        CUtil::mulBuffC(m_ppfMatrix[i], fC, m_aiMatrixDimensions[kCol]);
+
+    return *this;
 }
 
 
-CMatrix::MatrixError_t CMatrix::divByElement_I( const CMatrix &other )
+CMatrix& CMatrix::divByElement_I( const CMatrix &other )
 {
-    if (m_aiMatrixDimensions[kRow] != other.getNumRows() || m_aiMatrixDimensions[kCol] != other.getNumCols())
-        return kMatrixIllegalFunctionParam;
+    //if (m_aiMatrixDimensions[kRow] != other.getNumRows() || m_aiMatrixDimensions[kCol] != other.getNumCols())
+    //    return kMatrixIllegalFunctionParam;
 
     for (int i = 0; i < m_aiMatrixDimensions[kRow]; i++)
         CUtil::divBuff(m_ppfMatrix[i], other.getRow(i), m_aiMatrixDimensions[kCol]);
 
-    return kMatrixNoError;
+    return *this;
 }
 
-CMatrix::MatrixError_t CMatrix::addByElement_I( const CMatrix &other )
+CMatrix& CMatrix::addByElement_I( const CMatrix &other )
 {
-    if (m_aiMatrixDimensions[kRow] != other.getNumRows() || m_aiMatrixDimensions[kCol] != other.getNumCols())
-        return kMatrixIllegalFunctionParam;
+    //if (m_aiMatrixDimensions[kRow] != other.getNumRows() || m_aiMatrixDimensions[kCol] != other.getNumCols())
+    //    return kMatrixIllegalFunctionParam;
 
     for (int i = 0; i < m_aiMatrixDimensions[kRow]; i++)
         CUtil::addBuff(m_ppfMatrix[i], other.getRow(i), m_aiMatrixDimensions[kCol]);
 
-    return kMatrixNoError;
+    return *this;
 }
 
 CMatrix::MatrixError_t CMatrix::subByElement_I( const CMatrix &other )
@@ -694,4 +706,17 @@ void CMatrix::dbgPrint2StdOut() const
         std::cout << std::endl;
     }
     std::cout << std::endl;
+}
+
+CMatrix& CMatrix::addC_I( float fC )
+{
+    for (int i = 0; i < m_aiMatrixDimensions[kRow]; i++)
+        CUtil::addBuffC(m_ppfMatrix[i], fC, m_aiMatrixDimensions[kCol]);
+
+    return *this;
+}
+
+float** CMatrix::getMatrix()
+{
+    return m_ppfMatrix;
 }

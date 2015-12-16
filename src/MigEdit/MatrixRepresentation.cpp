@@ -424,4 +424,9 @@ Error_t CMatrixRepresentation::process( float **ppfInputBuffer, int iNumOfFrames
 
 }
 
+int CMatrixRepresentation::getParam( Params_t eParam ) const
+{
+    return m_aiParams[eParam];
+}
+
 

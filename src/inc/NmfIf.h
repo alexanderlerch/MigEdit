@@ -80,7 +80,7 @@ protected:
 
     int m_iNumIterations;
 private:
-    CNmfResult (const CNmfParametrization &/*other*/) {};
+    CNmfResult (const CNmfResult &/*other*/) {};
     CMatrix *m_aapCMatrices[kNumMatrices][kNumSplits];
 
     float *m_pfError;

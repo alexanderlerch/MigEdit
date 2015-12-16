@@ -167,6 +167,14 @@ public:
         for (int i = 0; i < iLength; i++)
             pSrcDest[i] += pSrc[i];
     }
+    static void addBuffC (float *pSrcDest, float fScale, int iLength)
+    {
+        assert (iLength >= 0);
+        assert (pSrcDest);
+
+        for (int i = 0; i < iLength; i++)
+            pSrcDest[i] += fScale;
+    }
 
     static void subBuff (float *pSrcDest, const float *pSrc, int iLength)
     {

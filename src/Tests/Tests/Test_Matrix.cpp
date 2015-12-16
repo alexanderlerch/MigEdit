@@ -232,6 +232,26 @@ SUITE(Matrix)
         CHECK_CLOSE(6, Matrix.getSum(false), 1e-4);
         CHECK_CLOSE(18, Matrix.getSum(true), 1e-4);
     }
+    TEST_FIXTURE(MatrixData, Inplace)
+    {
+        for (int i = 0; i < m_iNumRows; i++)
+        {
+            for (int j = 0; j < m_iNumCols; j++)
+            {
+                m_ppfBuff[i][j] = static_cast<float>(i*j);
+                Matrix.setElement(i,j, static_cast<float>(m_ppfBuff[i][j]));
+            }
+        }
+        Matrix.addC_I(3.F).mulC_I(.5F);
+        for (int i = 0; i < m_iNumRows; i++)
+        {
+            for (int j = 0; j < m_iNumCols; j++)
+            {
+                CHECK_CLOSE((m_ppfBuff[i][j]+3)*.5F, Matrix.getElement(i,j), 1e-4);
+            }
+        }
+        
+    }
 }
 
 #endif //WITH_TESTS

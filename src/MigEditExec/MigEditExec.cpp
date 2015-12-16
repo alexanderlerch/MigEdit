@@ -8,22 +8,9 @@
 #include "AudioInfo.h"
 #include "CommandLineOptions.h"
 
-#define WITH_FLOATEXCEPTIONS
-#define WITH_MEMORYCHECK
-
-// include exception header
-#if (defined(WITH_FLOATEXCEPTIONS) && !defined(NDEBUG) && defined (GTCMT_WIN32))
-#include <float.h>
-#endif // #ifndef WITHOUT_EXCEPTIONS
-
-// include memory leak header
-#if (defined(WITH_MEMORYCHECK) && !defined(NDEBUG) && defined (GTCMT_WIN32))
-#define CRTDBG_MAP_ALLOC
-#include <stdlib.h>
-#include <crtdbg.h>
-#else
-#include <stdlib.h>
-#endif
+#include "Preproc.h"
+#include "NmfIf.h"
+#include "MatrixRepresentation.h"
 
 using std::cout;
 using std::endl;
@@ -37,6 +24,7 @@ enum ClOptionIdx_t
     kInputName,             //!< input file path
     //kOutputName,            //!< output file path
     kNormalize,             //!< processing: normalize level
+    kNmf,                   //!< non-negative matrix factorization
     //kDownmix,
     //kResample,
     //kSpectrogram,           //!< compute spectrogram
@@ -48,8 +36,9 @@ enum ClOptionIdx_t
 
 const CCommandLineOptions::COption MyOptions[kNumClOptions] = 
 {
-    CCommandLineOptions::COption(kInputName, "-i", "input audio file path", CCommandLineOptions::COption::kString),
-    CCommandLineOptions::COption(kNormalize, "-n", "normalize the input file", CCommandLineOptions::COption::kBool),
+    CCommandLineOptions::COption(kInputName,    "-i",   "input audio file path",                        CCommandLineOptions::COption::kString),
+    CCommandLineOptions::COption(kNormalize,    "-n",   "normalize the input file",                     CCommandLineOptions::COption::kBool),
+    CCommandLineOptions::COption(kNmf,          "-nmf", "compute non-negative matrix factorization",    CCommandLineOptions::COption::kBool),
 };
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -58,6 +47,7 @@ int main(int argc, char* argv[])
 {
     std::string             sInputFilePath,                 //!< file paths
                             sOutputFilePath;
+    CCommandLineOptions     *phClArgs           = 0;
 
     CAudioFileIf            *phOutputFile       = 0;        //!< output audio file
     CAudioFileIf            *phInputFile        = 0;        //!< input audio file
@@ -71,54 +61,38 @@ int main(int argc, char* argv[])
     CAudioInfo              *phAudioInfo        = 0;
     float                   **ppfAudioData      = 0;
 
-    CCommandLineOptions     *phClArgs           = 0;
-
-    // detect memory leaks in win32
-#if (defined(WITH_MEMORYCHECK) && !defined(NDEBUG) && defined (GTCMT_WIN32))
-    // set memory checking flags
-    int iDbgFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
-    iDbgFlag       |= _CRTDBG_CHECK_ALWAYS_DF;
-    iDbgFlag       |= _CRTDBG_LEAK_CHECK_DF;
-    _CrtSetDbgFlag( iDbgFlag );
-#endif
-
-    // enable floating point exceptions in win32
-#if (defined(WITH_FLOATEXCEPTIONS) && !defined(NDEBUG) && defined (GTCMT_WIN32))
-    // enable check for exceptions (don't forget to enable stop in MSVC!)
-    _controlfp(~(_EM_INVALID | _EM_ZERODIVIDE | _EM_OVERFLOW | _EM_UNDERFLOW | _EM_DENORMAL), _MCW_EM) ;
-#endif // #ifndef WITHOUT_EXCEPTIONS
-
-    CCommandLineOptions::create(phClArgs);
-    CAudioFileIf::create(phInputFile);
-    CAudioInfo::create(phAudioInfo);
 
     showClInfo ();
 
     //////////////////////////////////////////////////////////////////////////////
     // parse command line arguments
+    CCommandLineOptions::create(phClArgs);
     phClArgs->init(MyOptions, kNumClOptions);
     phClArgs->process(argc, argv);
 
+    //////////////////////////////////////////////////////////////////////////////
+    // open the input wave file
     if (phClArgs->isOptionSet(kInputName))
+    {
         phClArgs->getOption(kInputName, sInputFilePath);
+
+        CAudioFileIf::create(phInputFile);
+        phInputFile->openFile(sInputFilePath, CAudioFileIf::kFileRead);
+        if (!phInputFile->isOpen())
+        {
+            cout << "Input wave file open error!";
+            return -1;
+        }
+        phInputFile->getFileSpec(stFileSpec);
+        phInputFile->getLength(iInFileLength);
+    }
     else
     {
-        cout << "input path not set";
+        cout << "input path not set!"  << endl;
         return -1;
     }
 
     //////////////////////////////////////////////////////////////////////////////
-    // open the input wave file
-    phInputFile->openFile(sInputFilePath, CAudioFileIf::kFileRead);
-    if (!phInputFile->isOpen())
-    {
-        cout << "Input wave file open error!";
-        return -1;
-    }
-    phInputFile->getFileSpec(stFileSpec);
-    phInputFile->getLength(iInFileLength);
-
-
     // allocate buffer for the whole file
     if (iInFileLength > 0 && stFileSpec.iNumChannels > 0)
     {
@@ -132,7 +106,9 @@ int main(int argc, char* argv[])
     // get audio data
     phInputFile->readData(ppfAudioData, iInFileLength);
 
-    // get audio info
+    //////////////////////////////////////////////////////////////////////////////
+    // get audio info and print it to stdout
+    CAudioInfo::create(phAudioInfo);
     phAudioInfo->init(stFileSpec.fSampleRateInHz, stFileSpec.iNumChannels);
     phAudioInfo->process(ppfAudioData,iInFileLength);
 
@@ -148,8 +124,50 @@ int main(int argc, char* argv[])
         cout << endl;
     }
 
+    //////////////////////////////////////////////////////////////////////////////
+    // compute nmf
+    if (phClArgs->isOptionSet(kNmf))
+    {
+        int iBlockLength    = 2048;
+        int iHopLength      = 1024;
+        int iRank           = 10;
+        CPreproc                *phPreProc          = 0;
+        CMatrixRepresentation   *phSpecGramComp     = 0;
+        CNmfIf                  *phNmf              = 0;
+        CMatrixRepresentationResult hSpecGram;
+        CNmfParametrization     hNmfInit;
+        CNmfResult              hNmfResult;
 
-    //////////////////////////////////////
+        // pre-processing
+        CPreproc::create(phPreProc);
+        phPreProc->init(phAudioInfo);
+        phPreProc->setStepActive(CPreproc::kPpDownmix);
+        phPreProc->setStepActive(CPreproc::kPpNormalize);
+        phPreProc->process(ppfAudioData, ppfAudioData, static_cast<int>(iInFileLength)); // inplace
+
+        // compute spectrogram
+        CMatrixRepresentation::create(phSpecGramComp);
+        phSpecGramComp->init(   static_cast<int>(iInFileLength), 
+            phAudioInfo->getSampleRate(),
+            1,//phAudioInfo->getNumChannels(), 
+            iBlockLength, 
+            iHopLength, 
+            hSpecGram);
+        phSpecGramComp->process(ppfAudioData, static_cast<int>(iInFileLength));
+
+        // compute nmf
+        CMatrix SpecGram = hSpecGram.getResultPtr()->transpose();
+        CNmfIf::create(phNmf);
+        hNmfInit.init(phSpecGramComp->getParam(CMatrixRepresentation::kBlockLength)/2+1, iRank);
+        phNmf->init(hNmfInit);
+        time = clock();
+        phNmf->process(&SpecGram, hNmfResult);
+        cout << endl << "Elapsed processing time: " << (clock() - time )*1.F/CLOCKS_PER_SEC << endl;
+        cout << "#Iterations:\t" << hNmfResult.getNumIterations() << endl;
+        cout << "Min. Error: \t" << hNmfResult.getError() << endl;
+    }
+
+    //////////////////////////////////////////////////////////////////////////////
     // clean-up
     for (int i = 0; i < stFileSpec.iNumChannels; i++)
     {
