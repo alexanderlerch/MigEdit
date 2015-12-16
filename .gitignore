@@ -56,3 +56,5 @@
 /lib/release/*.exp
 /src/Util/*.bak
 /bld2015
+/bin
+/lib
