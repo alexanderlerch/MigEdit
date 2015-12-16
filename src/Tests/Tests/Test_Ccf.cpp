@@ -1,6 +1,7 @@
 #include "MigEditConfig.h"
 
 #ifdef WITH_TESTS
+#include <iostream>
 #include <cassert>
 #include <cstdio>
 #include <ctime>
@@ -155,10 +156,11 @@ SUITE(Ccf)
         clTotalTime[0] = clock() - clStartTime;
 
         clStartTime = clock();
-        for (int i = 0; i< aiLengths[0]; i++)
+        float temp = 0.F;
+        for (int j = 0; j < aiLengths[1]; j++)
         {
-            float temp = 0.F;
-            for (int j = 0; j < aiLengths[0] - i - 1; j++)
+            temp = 0.F;
+            for (int i = 0; i< aiLengths[0] - j - 1; i++)
             {
                 temp += pfBuffer[i] * pfBuffer[i + j];
             }
@@ -166,6 +168,10 @@ SUITE(Ccf)
         clTotalTime[1] = clock() - clStartTime;
 
         CHECK  (clTotalTime[0] < clTotalTime[1]);
+
+        std::cout <<temp<<std::endl;
+
+        std::cout << clTotalTime[0] << "\t" << clTotalTime[1] << std::endl;
 
         delete pfBuffer;
     }
