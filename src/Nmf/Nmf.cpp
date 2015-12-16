@@ -69,16 +69,20 @@ Error_t CNmf::process( const CMatrix *pCInput, CNmfResult& NmfResult )
         aiRank[j]       = m_phCNmfConfig->getRank((MatrixSplit_t)j);
     }
     
+    // at least one pair of template and activation must exist
     if ((!aaCMatrix[kDict][kSplit2] && !aaCMatrix[kDict][kSplit1])  || (!aaCMatrix[kAct][kSplit2] && !aaCMatrix[kAct][kSplit1]))
         return kFunctionInvalidArgsError;
 
+    // verify that matrix dimensions make sense
     if ((aaCMatrix[kDict][kSplit1]->getNumRows()+aaCMatrix[kDict][kSplit2]->getNumRows() != pCInput->getNumRows())  || 
         (std::max(aaCMatrix[kAct][kSplit1]->getNumCols(),aaCMatrix[kAct][kSplit2]->getNumCols()) != pCInput->getNumCols()))
         return kFunctionInvalidArgsError;
 
+    // verify that not both ranks are 0
     if (aiRank[kSplit1] <= 0 && aiRank[kSplit2] <= 0)
         return kFunctionInvalidArgsError;
 
+    // compute weighting to weight the small split higher
     if (aiRank[kSplit1]*aiRank[kSplit2] != 0)
     {
         if (aiRank[kSplit1] > aiRank[kSplit2])
@@ -104,48 +108,51 @@ Error_t CNmf::process( const CMatrix *pCInput, CNmfResult& NmfResult )
     {
         float fSparsityCost = 0;
 
+        // (X./approx)
         CXHat = pCInput->divByElement(CXHat);
 
-        if (aiRank[kSplit2] > 0)
+        for (int j = 0; j < kNumSplits; j++)
         {
-            // update rules
-            // HD = HD .* ((alpha * WD)'* (X./approx))./((alpha * WD)'*rep + sparsity);
-            if (m_phCNmfConfig->getIsUpdated(kAct, kSplit2))            
-                aaCMatrix[kAct][kSplit2]->mulByElement_I((aaCMatrix[kDict][kSplit2]->transpose() * CXHat * afWeight[kSplit2]).divByElement(aaCMatrix[kDict][kSplit2]->transpose().mulByOnes(pCInput->getNumRows(),pCInput->getNumCols())*afWeight[kSplit2] + afSparsity[kSplit2]));
-
-            // WD = WD .* ((X./approx)*(alpha * HD)')./(rep*(alpha * HD)');
-            if (m_phCNmfConfig->getIsUpdated(kDict, kSplit2))            
-            {
-                aaCMatrix[kDict][kSplit2]->mulByElement_I((CXHat * aaCMatrix[kAct][kSplit2]->transpose() * afWeight[kSplit2]).divByElement((aaCMatrix[kAct][kSplit2]->mulByOnes(pCInput->getNumCols(),pCInput->getNumRows()) * afWeight[kSplit2]).transpose()));
-                //aaCMatrix[kDict][kSplit2]->setZeroBelowThresh(m_kMinOffset);
-                // normalization
-                aaCMatrix[kDict][kSplit2]->normalize_I(CMatrix::kPerCol);
-            }
-        }
-        if (aiRank[kSplit1] > 0)
-        {
+            if (aiRank[j] <= 0)
+                continue;
             // update rules
             // HH = HH .* ((beta * WH)'* (X./approx))./((beta * WH)'*rep);
-            if (m_phCNmfConfig->getIsUpdated(kAct, kSplit2))            
-                //aaCMatrix[kAct][kSplit1]->mulByElement_I((aaCMatrix[kDict][kSplit1]->transpose() * CXHat * afWeight[kSplit1]).divByElement(aaCMatrix[kDict][kSplit1]->transpose().mulByOnes(pCInput->getNumRows(),pCInput->getNumCols())*afWeight[kSplit1] + afSparsity[kSplit1]));
-                aaCMatrix[kAct][kSplit1]->mulByElement_I(
-                (aaCMatrix[kDict][kSplit1]->transpose().mulC_I(afWeight[kSplit1]) * CXHat ).divByElement_I(
-                aaCMatrix[kDict][kSplit1]->transpose().mulC_I(afWeight[kSplit1]).mulByOnes(pCInput->getNumRows(),pCInput->getNumCols()).addC_I(afSparsity[kSplit1])));
+            if (m_phCNmfConfig->getIsUpdated(kAct, static_cast<MatrixSplit_t>(j)))            
+                    aaCMatrix[kAct][j]->mulByElement_I(
+                    (aaCMatrix[kDict][j]->transpose().mulC_I(afWeight[j]) * CXHat ).divByElement_I(
+                    aaCMatrix[kDict][j]->transpose().mulC_I(afWeight[j]).mulByOnes(pCInput->getNumRows(),pCInput->getNumCols()).addC_I(afSparsity[j])));
 
-            if (m_phCNmfConfig->getIsUpdated(kDict, kSplit1))            
+            if (m_phCNmfConfig->getIsUpdated(kDict, static_cast<MatrixSplit_t>(j)))            
             {
                 // WH = WH .* ((X./approx)*(beta * HH)')./(rep*(beta * HH)');
-                aaCMatrix[kDict][kSplit1]->mulByElement_I(
-                    (CXHat * aaCMatrix[kAct][kSplit1]->transpose() * afWeight[kSplit1]).divByElement(
-                    (aaCMatrix[kAct][kSplit1]->mulByOnes(pCInput->getNumCols(),pCInput->getNumRows()) * afWeight[kSplit1]).transpose()));
+                aaCMatrix[kDict][j]->mulByElement_I(
+                    (CXHat * aaCMatrix[kAct][j]->transpose().mulC_I(afWeight[j])).divByElement_I(
+                    ((aaCMatrix[kAct][j]->mulC_I(afWeight[j])).mulByOnes(pCInput->getNumCols(),pCInput->getNumRows())).transpose()));
 
                 // normalization
                 //aaCMatrix[kDict][kSplit1]->setZeroBelowThresh(m_kMinOffset);
-                aaCMatrix[kDict][kSplit1]->normalize_I(CMatrix::kPerCol);
+                aaCMatrix[kDict][j]->normalize_I(CMatrix::kPerCol);
             }
         }
-        if (aiRank[kSplit1] > 0 && aiRank[kSplit2] > 0)
-            CXHat           = *aaCMatrix[kDict][kSplit1] * *aaCMatrix[kAct][kSplit1] * afWeight[kSplit1] + *aaCMatrix[kDict][kSplit2] * *aaCMatrix[kAct][kSplit2] * afWeight[kSplit2];
+        //if (aiRank[kSplit2] > 0)
+        //{
+        //    // update rules
+        //    // HD = HD .* ((alpha * WD)'* (X./approx))./((alpha * WD)'*rep + sparsity);
+        //    if (m_phCNmfConfig->getIsUpdated(kAct, kSplit2))            
+        //        aaCMatrix[kAct][kSplit2]->mulByElement_I((aaCMatrix[kDict][kSplit2]->transpose() * CXHat * afWeight[kSplit2]).divByElement(aaCMatrix[kDict][kSplit2]->transpose().mulByOnes(pCInput->getNumRows(),pCInput->getNumCols())*afWeight[kSplit2] + afSparsity[kSplit2]));
+
+        //    // WD = WD .* ((X./approx)*(alpha * HD)')./(rep*(alpha * HD)');
+        //    if (m_phCNmfConfig->getIsUpdated(kDict, kSplit2))            
+        //    {
+        //        aaCMatrix[kDict][kSplit2]->mulByElement_I((CXHat * aaCMatrix[kAct][kSplit2]->transpose() * afWeight[kSplit2]).divByElement((aaCMatrix[kAct][kSplit2]->mulByOnes(pCInput->getNumCols(),pCInput->getNumRows()) * afWeight[kSplit2]).transpose()));
+        //        //aaCMatrix[kDict][kSplit2]->setZeroBelowThresh(m_kMinOffset);
+        //        // normalization
+        //        aaCMatrix[kDict][kSplit2]->normalize_I(CMatrix::kPerCol);
+        //    }
+        //}
+       if (aiRank[kSplit1] > 0 && aiRank[kSplit2] > 0)
+            CXHat           = (*aaCMatrix[kDict][kSplit1] * *aaCMatrix[kAct][kSplit1]).mulC_I(afWeight[kSplit1]).addByElement_I(
+            (*aaCMatrix[kDict][kSplit2] * *aaCMatrix[kAct][kSplit2]).mulC_I(afWeight[kSplit2]));
         else if (aiRank[kSplit2] > 0)
             CXHat           = *aaCMatrix[kDict][kSplit2] * *aaCMatrix[kAct][kSplit2];
         else if (aiRank[kSplit1] > 0)
@@ -156,9 +163,9 @@ Error_t CNmf::process( const CMatrix *pCInput, CNmfResult& NmfResult )
             fSparsityCost  += afSparsity[j] * aaCMatrix[kAct][j]->getNorm();
 
         if (fSparsityCost > 0)
-            m_phfErr[k]  = calcKlDivergence(*pCInput, CXHat + fSparsityCost);
+            m_phfErr[k]  = CMatrix::getKlDivergence(*pCInput, CXHat + fSparsityCost);
         else 
-            m_phfErr[k]  = calcKlDivergence(*pCInput, CXHat);
+            m_phfErr[k]  = CMatrix::getKlDivergence(*pCInput, CXHat);
 
         // termination criteria
         if (isRelativeErrorBelowThresh(k))
@@ -181,25 +188,6 @@ bool CNmf::isRelativeErrorBelowThresh( int iCurrIteration ) const
 {
     if (iCurrIteration < 1)
         return false;
-    return (abs(m_phfErr[iCurrIteration] - m_phfErr[iCurrIteration-1])/(m_phfErr[0] - m_phfErr[iCurrIteration] + m_kMinOffset) < m_phCNmfConfig->getMinError());
+    return (abs(m_phfErr[iCurrIteration] - m_phfErr[iCurrIteration-1])/(m_phfErr[0] - m_phfErr[iCurrIteration] + m_kMinOffset)) < m_phCNmfConfig->getMinError();
 }
 
-float CNmf::calcKlDivergence( const CMatrix &Mat1, const CMatrix &Mat2 ) const
-{
-    int iNumRows    = Mat1.getNumRows();
-    int iNumCols    = Mat1.getNumCols();
-    float fResult   = 0;
-    assert (iNumRows == Mat2.getNumRows() || iNumCols == Mat2.getNumCols());
-    
-    for (int i = 0; i < iNumRows; i++)
-    {
-        for (int j = 0; j < iNumCols; j++)
-        {
-            float fElem1 = Mat1.getElement(i,j);
-            float fElem2 = Mat2.getElement(i,j);
-            fResult     += fElem1 * (std::log(fElem1 + m_kMinOffset) - std::log(fElem2 + m_kMinOffset)) - fElem1 + fElem2;
-        }
-    }
-
-    return fResult;
-}

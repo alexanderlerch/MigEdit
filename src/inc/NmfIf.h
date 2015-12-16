@@ -30,7 +30,7 @@ public:
     Error_t init(int iTemplateLength, int iRankSplit1, int iRankSplit2 = 0);
     Error_t setMatrixInit(Matrices_t eMatrix, MatrixSplit_t eSplit, const CMatrix *pCMatrix);
     Error_t setIsUpdated(Matrices_t eMatrix, MatrixSplit_t eSplit, bool bIsUpdate = true);
-    Error_t setTerminationCriteria (int iMaxIterations = 300, float fMinError = 1e-4F);
+    Error_t setTerminationCriteria (int iMaxIterations = 300, float fMinError = 1e-3F);
     Error_t setSparsityLambda(MatrixSplit_t eSplit, float fValue = 0);
     Error_t reset ();
 

@@ -82,7 +82,7 @@ Error_t CNmfIf::destroy (CNmfIf*& pCMigEdit)
 //////////////////////////////////////////////////////////////////////////////////
 CNmfParametrization::CNmfParametrization(  ) :
     m_iTemplateLength(0),
-    m_fMinError(1e-4F),
+    m_fMinError(0),
     m_iMaxIter(300)
 {
     reset();
@@ -151,8 +151,7 @@ Error_t CNmfParametrization::setSparsityLambda( MatrixSplit_t eSplit, float fVal
 
 Error_t CNmfParametrization::reset()
 {
-    m_fMinError         = 1e-4F;
-    m_iMaxIter          = 300;
+    setTerminationCriteria();
 
     CUtil::setZero(m_afSparsity, kNumSplits);
     CUtil::setZero(m_aiRank, kNumSplits);

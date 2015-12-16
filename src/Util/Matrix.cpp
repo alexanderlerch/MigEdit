@@ -259,29 +259,43 @@ CMatrix CMatrix::operator-(const CMatrix &other) const
 CMatrix CMatrix::operator*(CMatrix &other) const
 { 
     assert(m_aiMatrixDimensions[kCol] == other.getNumRows());
-    CMatrix TmpMatrix;
+    CMatrix ResultMatrix;
 
     if (m_aiMatrixDimensions[kCol] == other.getNumRows())
+    //{ 
+    //    int iNumResCols     = other.getNumCols ();
+    //    float** ppfOther    = other.getMatrixPtr();
+    //    ResultMatrix.init(m_aiMatrixDimensions[kRow], iNumResCols);
+    //    float** ppfResult   = ResultMatrix.getMatrixPtr();
+
+    //    for (int i = 0; i < m_aiMatrixDimensions[kRow]; i++)
+    //    {
+    //        for (int j = 0; j < iNumResCols; j++)
+    //        {
+    //            float fResult = 0;
+    //            for (int k = 0; k < m_aiMatrixDimensions[kCol]; k++)
+    //                fResult     += m_ppfMatrix[i][k] * ppfOther[k][j];
+    //            ppfResult[i][j]  = fResult;
+    //        }
+    //    }
+    //}
     { 
         int iNumResCols     = other.getNumCols ();
-        float** ppfOther    = other.getMatrix();
-        TmpMatrix.init(m_aiMatrixDimensions[kRow], other.getNumCols());
-        float** ppfTmp      = TmpMatrix.getMatrix();
+        //float** ppfOther    = other.getMatrixPtr();
+        ResultMatrix.init(m_aiMatrixDimensions[kRow], iNumResCols);
+        float** ppfResult   = ResultMatrix.getMatrixPtr();
+        CMatrix TmpMatrix   = other.transpose();
 
         for (int i = 0; i < m_aiMatrixDimensions[kRow]; i++)
         {
             for (int j = 0; j < iNumResCols; j++)
             {
-                float fResult = 0;
-                for (int k = 0; k < m_aiMatrixDimensions[kCol]; k++)
-                    fResult     += m_ppfMatrix[i][k] * ppfOther[k][j];
-                //TmpMatrix.setElement(i, j, fResult);
-                ppfTmp[i][j]    = fResult;
+                ppfResult[i][j]  = CUtil::mulBuffScalar(m_ppfMatrix[i], TmpMatrix.getRow(j), m_aiMatrixDimensions[kCol]);
             }
         }
     }
     
-    return TmpMatrix;
+    return ResultMatrix;
 }
 
 bool   CMatrix::operator==(const CMatrix &other) const
@@ -375,16 +389,15 @@ CMatrix CMatrix::transpose()
         iNumNewCols = m_aiMatrixDimensions[kRow];
     CMatrix NewMatrix;
     NewMatrix.init(iNumNewRows, iNumNewCols);
+    float **ppfNew = NewMatrix.getMatrixPtr();
 
     for (int i = 0; i < iNumOldRows; i++)
     {
         for (int j = 0; j < iNumOldCols; j++)
         {
-            MatrixError_t rErr = NewMatrix.setElement(j, i, this->getElement(i, j));
-
-            assert (rErr == kMatrixNoError);
-            //if (rErr != kMatrixNoError)
-            //    return rErr;
+            //MatrixError_t rErr = NewMatrix.setElement(j, i, this->getElement(i, j));
+            //assert (rErr == kMatrixNoError);
+            ppfNew[j][i] = m_ppfMatrix[i][j];
         }
     }
 
@@ -716,7 +729,22 @@ CMatrix& CMatrix::addC_I( float fC )
     return *this;
 }
 
-float** CMatrix::getMatrix()
+float** CMatrix::getMatrixPtr()
 {
     return m_ppfMatrix;
+}
+
+CMatrix CMatrix::getSubMatrix( int iStartRow, int iStartCol, int iEndRow, int iEndCol ) const
+{
+    CMatrix TmpMatrix;
+
+    if(!isIndexValid(iStartRow, iStartCol) || !isIndexValid(iEndRow, iEndCol) || iStartRow > iEndRow || iStartCol > iEndCol)
+        return TmpMatrix;
+
+    TmpMatrix.init(iEndRow-iStartRow+1, iEndCol-iStartCol+1);
+
+    for (int i = iStartRow, it=0; i <= iEndRow; i++,it++)
+        TmpMatrix.setRow(it, &m_ppfMatrix[i][iStartCol], iEndCol-iStartCol+1);
+
+    return TmpMatrix;
 }
