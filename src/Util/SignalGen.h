@@ -75,7 +75,7 @@ public:
 
         for (int i = 0; i < iLength; i++)
         {
-            pfOutBuf[i] = rand()*2*fAmplitude/RAND_MAX;
+            pfOutBuf[i] = rand()*fAmplitude/RAND_MAX;
         }
 
         return kNoError;

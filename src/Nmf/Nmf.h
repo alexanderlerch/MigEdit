@@ -12,16 +12,21 @@ public:
 
     Error_t process (const CMatrix *pCInput, CNmfResult& NmfResult) override;
 
+    void adaptTemplateXCorr( CMatrix * paaCMatrix[kNumMatrices][kNumSplits], const int aiRank[], float fAdaptCoeff );
+
+    CMatrix calcCrossCorr( CMatrix * paCMatrix[kNumSplits] );
+
+
     CNmf ();
     virtual ~CNmf ();
 
 private:
+    void runNmf( const CMatrix * pCInput, CNmfResult &NmfResult );
     float calcKlDivergence(const CMatrix &Mat1, const CMatrix &Mat2) const;
-    bool isRelativeErrorBelowThresh(int iCurrIteration) const;
+    bool isRelativeErrorBelowThresh(int iCurrIteration, const float *pfErr) const;
 
     static const float m_kMinOffset;
 
-    float *m_phfErr;
     CNmfParametrization *m_phCNmfConfig;
 };
 

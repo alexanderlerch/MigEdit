@@ -60,7 +60,7 @@ SUITE(Nmf)
             }
         }
         
-        CHECK_CLOSE(0,m_CResult.getError(), 1e-4F);
+        CHECK_CLOSE(0,m_CResult.getNmfError(), 1e-4F);
         CHECK_CLOSE(3,Result[kDict][kSplit1].getSum(), 1e-4F);
         for (int j = 0; j < 3; j++)
             CHECK_CLOSE(1,Result[kDict][kSplit1].getColNorm(j,1),1e-4F);

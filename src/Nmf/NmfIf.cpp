@@ -14,17 +14,7 @@
 static const char*  kCMigEditBuildDate             = __DATE__;
 
 
-//CMigEditIf::CMigEditIf ()
-//{
-//    // this never hurts
-//    this->resetInstance ();
-//}
-//
-//
-//CMigEditIf::~CMigEditIf ()
-//{
-//    this->resetInstance ();
-//}
+
 
 const int  CNmfIf::getVersion (const Version_t eVersionIdx)
 {
@@ -82,8 +72,10 @@ Error_t CNmfIf::destroy (CNmfIf*& pCMigEdit)
 //////////////////////////////////////////////////////////////////////////////////
 CNmfParametrization::CNmfParametrization(  ) :
     m_iTemplateLength(0),
-    m_fMinError(0),
-    m_iMaxIter(300)
+    m_fNmfMinError(0),
+    m_iNmfMaxIter(300),
+    m_eMethod(kNoAdaptation),
+    m_fAdaptRho(0)
 {
     reset();
 }
@@ -127,13 +119,24 @@ Error_t CNmfParametrization::setIsUpdated( Matrices_t eMatrix, MatrixSplit_t eSp
     return kNoError;
 }
 
-Error_t CNmfParametrization::setTerminationCriteria( int iMaxIterations /*= 300*/, float fMinError /*= 1e-4F*/ )
+Error_t CNmfParametrization::setNmfTerminationCriteria( int iMaxIterations /*= 300*/, float fMinError /*= 1e-3F*/ )
 {
     if (iMaxIterations <= 0 || fMinError <= 0)
         return kFunctionInvalidArgsError;
 
-    m_iMaxIter  = iMaxIterations;
-    m_fMinError = fMinError;
+    m_iNmfMaxIter  = iMaxIterations;
+    m_fNmfMinError = fMinError;
+
+    return kNoError;
+}
+
+Error_t CNmfParametrization::setAdaptTerminationCriteria( int iMaxIterations /*= 300*/, float fMinError /*= 1e-2F*/ )
+{
+    if (iMaxIterations <= 0 || fMinError <= 0)
+        return kFunctionInvalidArgsError;
+
+    m_iAdaptMaxIter  = iMaxIterations;
+    m_fAdaptMinError = fMinError;
 
     return kNoError;
 }
@@ -151,7 +154,11 @@ Error_t CNmfParametrization::setSparsityLambda( MatrixSplit_t eSplit, float fVal
 
 Error_t CNmfParametrization::reset()
 {
-    setTerminationCriteria();
+    // default settings
+    setNmfTerminationCriteria();
+    setAdaptationMethod();
+    setAdaptTerminationCriteria();
+    setAdaptRho();
 
     CUtil::setZero(m_afSparsity, kNumSplits);
     CUtil::setZero(m_aiRank, kNumSplits);
@@ -160,6 +167,7 @@ Error_t CNmfParametrization::reset()
     {
         for (int j = 0; j < kNumSplits; j++)
         {
+            setSparsityLambda((MatrixSplit_t) j);
             m_aapCMatrices[i][j]    = 0;
             m_aabIsUpdated[i][j]    = true;
         }
@@ -169,14 +177,14 @@ Error_t CNmfParametrization::reset()
     return kNoError;
 }
 
-int CNmfParametrization::getMaxIterations() const
+int CNmfParametrization::getNmfMaxIterations() const
 {
-    return m_iMaxIter;
+    return m_iNmfMaxIter;
 }
 
-float CNmfParametrization::getMinError() const
+float CNmfParametrization::getNmfMinError() const
 {
-    return m_fMinError;
+    return m_fNmfMinError;
 }
 
 float CNmfParametrization::getSparsityLambda( MatrixSplit_t eSplit ) const
@@ -213,40 +221,56 @@ Error_t CNmfParametrization::init( int iTemplateLength, int iRankSplit1, int iRa
     return kNoError;
 }
 
-CMatrix* CNmfResult::getMatrixPtr( Matrices_t eMatrix, MatrixSplit_t eSplit )
+Error_t CNmfParametrization::setAdaptationMethod( AdaptationMethod_t eMethod  /*= kNoAdaptation*/ )
 {
-    return m_aapCMatrices[eMatrix][eSplit];
+    m_eMethod   = eMethod;
+
+    return kNoError;
 }
 
-CMatrix CNmfResult::getMatrix( Matrices_t eMatrix, MatrixSplit_t eSplit ) const
+CNmfParametrization::AdaptationMethod_t CNmfParametrization::getAdaptationMethod() const
 {
-    return *m_aapCMatrices[eMatrix][eSplit];
+    return m_eMethod;
 }
 
-float* CNmfResult::getErrorPtr()
+int CNmfParametrization::getAdaptMaxIterations() const
 {
-    return m_pfError;
+    if (m_eMethod != kNoAdaptation)
+        return m_iAdaptMaxIter;
+    else
+    {
+        return 1;
+    }
 }
 
-int CNmfResult::getNumIterations() const
+float CNmfParametrization::getAdaptMinError() const
 {
-    return m_iNumIterations;
+    return m_fAdaptMinError;
 }
 
-float CNmfResult::getError() const
+float CNmfParametrization::getAdaptRhoThresh() const
 {
-    if (!m_pfError) 
-        return -1.F;
+    return m_fAdaptRho;
+}
 
-    assert(m_iNumIterations>=0 && m_iNumIterations < m_iMaxIter);
+Error_t CNmfParametrization::setAdaptRho( float fRho /*= .5F*/ )
+{
+    if (fRho < 0 || fRho > 1.F)
+        return kFunctionInvalidArgsError;
 
-    return m_pfError[m_iNumIterations-1];
+    m_fAdaptRho = fRho;
+
+    return kNoError;
 }
 
 CNmfResult::CNmfResult() :
-    m_iNumIterations(0),
-    m_pfError(0),
-    m_bIsInitialized(false)
+    m_iNumNmfIter(0),
+    m_iNumAdaptIter(0),
+    m_pfNmfError(0),
+    m_pfAdaptError(0),
+    m_bIsInitialized(false),
+    m_iMaxAdaptIter(1),
+    m_iMaxNmfIter(0)
 {
     for (int i = 0; i < kNumMatrices; i++)
     {
@@ -276,10 +300,15 @@ Error_t CNmfResult::init( CNmfParametrization& ParamsAndInit, int iNumObservatio
 {
     reset();
 
-    m_iMaxIter  = ParamsAndInit.getMaxIterations();
-    m_pfError   = new float[m_iMaxIter];
-    CUtil::setZero(m_pfError, m_iMaxIter);
-    
+    m_iMaxNmfIter   = ParamsAndInit.getNmfMaxIterations();
+    m_pfNmfError    = new float[m_iMaxNmfIter];
+    CUtil::setZero(m_pfNmfError, m_iMaxNmfIter);
+
+    m_iMaxAdaptIter = ParamsAndInit.getAdaptMaxIterations();
+
+    m_pfAdaptError  = new float[m_iMaxAdaptIter];
+    CUtil::setZero(m_pfAdaptError, m_iMaxAdaptIter);
+ 
 
     for (int k = 0; k < kNumSplits; k++)
     {
@@ -342,10 +371,63 @@ Error_t CNmfResult::reset()
             m_aapCMatrices[i][j]->reset();
         }
     }
-    if (m_pfError)
-        delete [] m_pfError;
-    m_pfError   = 0;
-    m_iMaxIter  = 0;
+    if (m_pfNmfError)
+        delete [] m_pfNmfError;
+    m_pfNmfError   = 0;
+    m_iMaxNmfIter  = 0;
+    if (m_pfAdaptError)
+        delete [] m_pfAdaptError;
+    m_pfAdaptError   = 0;
+    m_iMaxAdaptIter= 0;
 
     return kNoError;
+}
+
+CMatrix* CNmfResult::getMatrixPtr( Matrices_t eMatrix, MatrixSplit_t eSplit )
+{
+    return m_aapCMatrices[eMatrix][eSplit];
+}
+
+CMatrix CNmfResult::getMatrix( Matrices_t eMatrix, MatrixSplit_t eSplit ) const
+{
+    return *m_aapCMatrices[eMatrix][eSplit];
+}
+
+float* CNmfResult::getNmfErrorPtr()
+{
+    assert(m_pfNmfError);
+    return m_pfNmfError;
+}
+
+float* CNmfResult::getAdaptErrorPtr()
+{
+    assert(m_pfAdaptError);
+    return m_pfAdaptError;
+}
+
+int CNmfResult::getNumNmfIterations() const
+{
+    return m_iNumNmfIter;
+}
+
+float CNmfResult::getNmfError() const
+{
+    assert (m_pfNmfError);
+    assert(m_iNumNmfIter>=0 && m_iNumNmfIter < m_iMaxNmfIter);
+
+    return m_pfNmfError[m_iNumNmfIter-1];
+}
+
+int CNmfResult::getNumAdaptIterations() const
+{
+    return m_iNumAdaptIter;
+}
+
+float CNmfResult::getAdaptError() const
+{
+    assert (m_pfAdaptError);
+    assert(m_iNumAdaptIter>=0 && m_iNumAdaptIter < m_iMaxAdaptIter);
+
+    return m_pfAdaptError[m_iNumNmfIter-1];
+
 }

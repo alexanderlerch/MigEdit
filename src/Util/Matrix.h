@@ -49,6 +49,7 @@ public:
     float           getElement (int iRow, int iCol) const;
     MatrixError_t   setRow (int iRow, const float *pfValues, int iNumValues);
     MatrixError_t   getRow (int iRow, float *pfValues, int iNumValues) const;
+    const float*    getRowPtr (int iRow) const;
     MatrixError_t   setCol (int iCol, const float *pfValues, int iNumValues);
     MatrixError_t   getCol (int iCol, float *pfValues, int iNumValues) const;
     CMatrix         getSubMatrix(int iStartRow, int iStartCol, int iEndRow, int iEndCol) const;
@@ -57,6 +58,7 @@ public:
     MatrixError_t   setZeroBelowThresh (float fThresh = 0);
     MatrixError_t   setOnes ();
     MatrixError_t   setRand ();
+    MatrixError_t   setRowRand (int iRow);
     
     MatrixError_t   transpose_I ();
     MatrixError_t   normalize_I (ActionAppliedTo_t eActionArea = kAll, int p = 1);
@@ -68,6 +70,7 @@ public:
 
     CMatrix&        mulByElement_I(const CMatrix &other);
     CMatrix&        mulC_I(float fC);
+    CMatrix&        mulRowC_I(int iRow, float fC);
     CMatrix&        divByElement_I(const CMatrix &other);
     CMatrix&        addByElement_I(const CMatrix &other);
     CMatrix&        addC_I( float fC );
@@ -91,19 +94,21 @@ public:
         int iNumRows    = Mat1.getNumRows();
         int iNumCols    = Mat1.getNumCols();
         float fResult   = 0;
-        assert (iNumRows == Mat2.getNumRows() || iNumCols == Mat2.getNumCols());
         float **ppfMat1 = 0;
         float **ppfMat2 = 0;
 
-        pMat        = (CMatrix*)(&Mat1);
-        ppfMat1     = pMat->getMatrixPtr();
-        pMat        = (CMatrix*)(&Mat2);
-        ppfMat2     = pMat->getMatrixPtr();
+        assert (iNumRows == Mat2.getNumRows() || iNumCols == Mat2.getNumCols());
+
+        pMat            = (CMatrix*)(&Mat1);
+        ppfMat1         = pMat->getMatrixPtr();
+        pMat            = (CMatrix*)(&Mat2);
+        ppfMat2         = pMat->getMatrixPtr();
         for (int i = 0; i < iNumRows; i++)
         {
             for (int j = 0; j < iNumCols; j++)
             {
-                fResult     += ppfMat1[i][j] * (std::logf(ppfMat1[i][j] + 1e-24F) - std::logf(ppfMat2[i][j] + 1e-24F)) - ppfMat1[i][j] + ppfMat2[i][j];
+                //fResult     += ppfMat1[i][j] * (std::logf(ppfMat1[i][j] + 1e-24F) - std::logf(ppfMat2[i][j] + 1e-24F)) - ppfMat1[i][j] + ppfMat2[i][j];
+                fResult     += ppfMat1[i][j] * (std::logf((ppfMat1[i][j] + 1e-24F)/(ppfMat2[i][j] + 1e-24F)) - 1.F) + ppfMat2[i][j];
             }
         }
 
@@ -120,7 +125,6 @@ public:
 
 private:
     float** getMatrixPtr();
-    const float*    getRow (int iRow) const;
     float getVectorNorm (int iRow = -1, int iCol = -1, int p = 1) const;
     bool isIndexValid( int iRow, int iCol ) const
     {

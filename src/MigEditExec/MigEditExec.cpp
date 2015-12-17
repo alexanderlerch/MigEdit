@@ -7,6 +7,7 @@
 #include "AudioFileIf.h"
 #include "AudioInfo.h"
 #include "CommandLineOptions.h"
+#include "SignalGen.h"
 
 #include "Preproc.h"
 #include "NmfIf.h"
@@ -99,7 +100,7 @@ int main(int argc, char* argv[])
         ppfAudioData  = new float* [stFileSpec.iNumChannels];
         for (int i = 0; i < stFileSpec.iNumChannels; i++)
         {
-            ppfAudioData[i]   = new float [iInFileLength];
+            ppfAudioData[i]   = new float [static_cast<int>(iInFileLength)];
         }
     }
 
@@ -135,7 +136,7 @@ int main(int argc, char* argv[])
         CMatrixRepresentation   *phSpecGramComp     = 0;
         CNmfIf                  *phNmf              = 0;
         CMatrixRepresentationResult hSpecGram;
-        CNmfParametrization     hNmfInit;
+        CNmfParametrization     hNmfParam;
         CNmfResult              hNmfResult;
 
         // pre-processing
@@ -158,13 +159,46 @@ int main(int argc, char* argv[])
         // compute nmf
         CMatrix SpecGram = hSpecGram.getResultPtr()->transpose();
         CNmfIf::create(phNmf);
-        hNmfInit.init(phSpecGramComp->getParam(CMatrixRepresentation::kBlockLength)/2+1, iRank);
-        phNmf->init(hNmfInit);
+
+
+        ////////////////////////////////////////////////////////
+        //const int iStartIdx = 0;
+        //const int iFreqLen  = 15;
+        //const int iObs      = 12;
+        //const int iTestRank = 10;
+        //CMatrix Init(iFreqLen, iTestRank);
+        //for (int i = 0; i < iFreqLen; i++)
+        //{
+        //    float afInit[iTestRank];
+        //    CSignalGen::generateSine(afInit,i+1,iTestRank, iTestRank,.5F);
+        //    CUtil::addBuffC(afInit, .5F, iTestRank);
+        //    Init.setRow(i, afInit, iTestRank);
+        //}
+        //hNmfParam.init(iFreqLen, iTestRank);
+        //hNmfParam.setMatrixInit(kDict,kSplit1,&Init);
+        ////Init.dbgPrint2StdOut();
+        //Init.init(iTestRank, iObs);
+        //for (int i = 0; i < iTestRank; i++)
+        //{
+        //    float afInit[iObs];
+        //    CSignalGen::generateSine(afInit,i+1,iObs, iObs,.5F);
+        //    CUtil::addBuffC(afInit, .5F, iObs);
+        //    Init.setRow(i, afInit, iObs);
+        //}
+        ////Init.dbgPrint2StdOut();
+
+        //hNmfParam.setMatrixInit(kAct,kSplit1,&Init);
+        //SpecGram = SpecGram.getSubMatrix(0,iStartIdx+1,iFreqLen-1,iStartIdx+iObs);
+        ////SpecGram.dbgPrint2StdOut();
+        ////////////////////////////////////////////////////////
+
+        hNmfParam.init(phSpecGramComp->getParam(CMatrixRepresentation::kBlockLength)/2+1, iRank);
+        phNmf->init(hNmfParam);
         time = clock();
         phNmf->process(&SpecGram, hNmfResult);
         cout << endl << "Elapsed processing time: " << (clock() - time )*1.F/CLOCKS_PER_SEC << endl;
-        cout << "#Iterations:\t" << hNmfResult.getNumIterations() << endl;
-        cout << "Min. Error: \t" << hNmfResult.getError() << endl;
+        cout << "#Iterations:\t" << hNmfResult.getNumNmfIterations() << endl;
+        cout << "Min. Error: \t" << hNmfResult.getNmfError() << endl;
     }
 
     //////////////////////////////////////////////////////////////////////////////

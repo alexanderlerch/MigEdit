@@ -30,7 +30,7 @@ public:
     std::string getAxisUnit (enum Axes_t eAxis) const;
 
     Error_t     getCol (int iCol, float *pfValues, int iNumValues, int iChannelIdx = 0) const;
-    Error_t     getRow (int iRow, float *pfValues, int iNumValues, int iChannelIdx = 0) const;
+    Error_t getRow (int iRow, float *pfValues, int iNumValues, int iChannelIdx = 0) const;
     CMatrix*    getResultPtr (int iChannelIdx = 0) ;
 
 protected:

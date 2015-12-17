@@ -153,7 +153,7 @@ CMatrix::MatrixError_t   CMatrix::getRow (int iRow, float *pfValues, int iNumOfV
     return kMatrixNoError;
 }
 
-const float* CMatrix::getRow( int iRow ) const
+const float* CMatrix::getRowPtr( int iRow ) const
 {
     if(!isIndexValid(iRow, 0))
         return 0;
@@ -290,7 +290,7 @@ CMatrix CMatrix::operator*(CMatrix &other) const
         {
             for (int j = 0; j < iNumResCols; j++)
             {
-                ppfResult[i][j]  = CUtil::mulBuffScalar(m_ppfMatrix[i], TmpMatrix.getRow(j), m_aiMatrixDimensions[kCol]);
+                ppfResult[i][j]  = CUtil::mulBuffScalar(m_ppfMatrix[i], TmpMatrix.getRowPtr(j), m_aiMatrixDimensions[kCol]);
             }
         }
     }
@@ -417,7 +417,7 @@ CMatrix& CMatrix::mulByElement_I( const CMatrix &other )
     //    return kMatrixIllegalFunctionParam;
 
     for (int i = 0; i < m_aiMatrixDimensions[kRow]; i++)
-        CUtil::mulBuff(m_ppfMatrix[i], other.getRow(i), m_aiMatrixDimensions[kCol]);
+        CUtil::mulBuff(m_ppfMatrix[i], other.getRowPtr(i), m_aiMatrixDimensions[kCol]);
 
     return *this;
 }
@@ -430,6 +430,13 @@ CMatrix& CMatrix::mulC_I( float fC )
     return *this;
 }
 
+CMatrix& CMatrix::mulRowC_I( int iRow, float fC )
+{
+    CUtil::mulBuffC(m_ppfMatrix[iRow], fC, m_aiMatrixDimensions[kCol]);
+
+    return *this;
+}
+
 
 CMatrix& CMatrix::divByElement_I( const CMatrix &other )
 {
@@ -437,7 +444,7 @@ CMatrix& CMatrix::divByElement_I( const CMatrix &other )
     //    return kMatrixIllegalFunctionParam;
 
     for (int i = 0; i < m_aiMatrixDimensions[kRow]; i++)
-        CUtil::divBuff(m_ppfMatrix[i], other.getRow(i), m_aiMatrixDimensions[kCol]);
+        CUtil::divBuff(m_ppfMatrix[i], other.getRowPtr(i), m_aiMatrixDimensions[kCol]);
 
     return *this;
 }
@@ -448,7 +455,7 @@ CMatrix& CMatrix::addByElement_I( const CMatrix &other )
     //    return kMatrixIllegalFunctionParam;
 
     for (int i = 0; i < m_aiMatrixDimensions[kRow]; i++)
-        CUtil::addBuff(m_ppfMatrix[i], other.getRow(i), m_aiMatrixDimensions[kCol]);
+        CUtil::addBuff(m_ppfMatrix[i], other.getRowPtr(i), m_aiMatrixDimensions[kCol]);
 
     return *this;
 }
@@ -459,7 +466,7 @@ CMatrix::MatrixError_t CMatrix::subByElement_I( const CMatrix &other )
         return kMatrixIllegalFunctionParam;
 
     for (int i = 0; i < m_aiMatrixDimensions[kRow]; i++)
-        CUtil::subBuff(m_ppfMatrix[i], other.getRow(i), m_aiMatrixDimensions[kCol]);
+        CUtil::subBuff(m_ppfMatrix[i], other.getRowPtr(i), m_aiMatrixDimensions[kCol]);
 
     return kMatrixNoError;
 }
@@ -601,6 +608,13 @@ CMatrix::MatrixError_t CMatrix::setRand()
 {
     for (int i = 0; i < m_aiMatrixDimensions[kRow]; i++)
         CSignalGen::generateNoise(m_ppfMatrix[i], m_aiMatrixDimensions[kCol]);
+
+    return kMatrixNoError;
+}
+
+CMatrix::MatrixError_t CMatrix::setRowRand(int iRow)
+{
+    CSignalGen::generateNoise(m_ppfMatrix[iRow], m_aiMatrixDimensions[kCol]);
 
     return kMatrixNoError;
 }
